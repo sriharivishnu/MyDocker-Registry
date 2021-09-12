@@ -9,6 +9,7 @@ import (
 	"github.com/aws/aws-sdk-go-v2/service/s3"
 
 	localConfig "github.com/sriharivishnu/shopify-challenge/config"
+	"github.com/sriharivishnu/shopify-challenge/utils"
 )
 
 type Storage interface {
@@ -46,11 +47,14 @@ func (s *S3) GetUploadURL(username string, repository string, tag string) (strin
 
 	// Create an Amazon S3 service client
 	client := s3.NewFromConfig(cfg)
-	key := username + "/" + repository + "/" + tag
+	file_key := utils.CreateFileKey(username, repository, tag)
+	// expiresAt := time.Now().Add(1 * time.Hour)
+	log.Println(file_key)
 
 	input := &s3.PutObjectInput{
 		Bucket: &localConfig.Config.S3_BUCKET_KEY,
-		Key:    &key,
+		Key:    &file_key,
+		// Expires: &expiresAt,
 	}
 	psClient := s3.NewPresignClient(client)
 	resp, err := PutPresignedURL(context.TODO(), psClient, input)
@@ -60,7 +64,7 @@ func (s *S3) GetUploadURL(username string, repository string, tag string) (strin
 	return resp.URL, nil
 }
 
-func (s *S3) GetDownloadURL(username string, repository string, tag string) (string, error) {
+func (s *S3) GetDownloadURL(file_key string) (string, error) {
 	cfg, err := config.LoadDefaultConfig(context.TODO())
 	if err != nil {
 		log.Fatal(err)
@@ -68,11 +72,10 @@ func (s *S3) GetDownloadURL(username string, repository string, tag string) (str
 
 	// Create an Amazon S3 service client
 	client := s3.NewFromConfig(cfg)
-	key := username + "/" + repository + "/" + tag
 
 	input := &s3.GetObjectInput{
 		Bucket: &localConfig.Config.S3_BUCKET_KEY,
-		Key:    &key,
+		Key:    &file_key,
 	}
 	psClient := s3.NewPresignClient(client)
 

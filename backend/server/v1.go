@@ -23,6 +23,8 @@ func SetUpV1(router *gin.Engine) {
 	repository.GET("", repoController.GetForUser)
 
 	image_tag := v1.Group("tag")
-	image_tag.POST("/upload_url", imageTagController.GetUploadURL)
+	image_tag.GET("/:repo/:tag/upload_url", imageTagController.GetUploadURL)
+	image_tag.GET("/:repo/:tag", imageTagController.GetImage)
+	image_tag.POST("", imageTagController.CreateImageTag)
 
 }

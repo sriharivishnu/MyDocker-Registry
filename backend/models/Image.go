@@ -11,19 +11,21 @@ type ImageTag struct {
 	RepositoryId string    `json:"repository_id" db:"repository_id"`
 	Description  string    `json:"description,omitempty" db:"description"`
 	Tag          string    `json:"tag,omitempty" db:"tag"`
+	FileKey      string    `json:"file_key,omitempty" db:"file_key"`
 	CreatedAt    time.Time `json:"created_at,omitempty" db:"created_at"`
 }
 
 type IImageTag interface {
 	Create() error
-	GetImageTagById(id string) error
+	GetImageTagByRepoAndTag(repository_id, tagName string) error
 	GetLatestImageTag(id string) error
 	GetImageTagsForRepo(repository_id string) ([]ImageTag, error)
 }
 
 func (tag *ImageTag) Create() error {
+	sql := "INSERT INTO image_tag (repository_id, tag, description, file_key) VALUES (?, ?, ?, ?) returning *;"
 	tx := db.DbConn.MustBegin()
-	err := tx.Get(tag, "INSERT INTO image_tag (repository_id, tag, description) VALUES (?, ?, ?) returning *;", tag.RepositoryId, tag.Tag, tag.Description)
+	err := tx.Get(tag, sql, tag.RepositoryId, tag.Tag, tag.Description, tag.FileKey)
 	if err != nil {
 		tx.Rollback()
 		return err
@@ -32,8 +34,8 @@ func (tag *ImageTag) Create() error {
 	return nil
 }
 
-func (tag *ImageTag) GetImageTagById(id string) error {
-	err := db.DbConn.Get(tag, "select * from image_tag where id = ?", id)
+func (tag *ImageTag) GetImageTagByRepoAndTag(repository_id, tagName string) error {
+	err := db.DbConn.Get(tag, "select * from image_tag where repository_id = ? and tag = ?", repository_id, tagName)
 	if err != nil {
 		return err
 	}

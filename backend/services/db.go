@@ -21,7 +21,7 @@ create table if not exists user (
 var repositoryTable = `
 create table if not exists repository (
     id CHAR(36) PRIMARY KEY default uuid(),
-	owner_id CHAR(36) not null,
+	owner_id CHAR(36) NOT NULL,
 	name VARCHAR(256),
 	description VARCHAR(2056),
     created_at timestamp default now(),
@@ -36,8 +36,9 @@ var imageTagTable = `
 create table if not exists image_tag (
     id CHAR(36) PRIMARY KEY default uuid(),
 	repository_id CHAR(36) NOT NULL,
-    tag VARCHAR(256) not null UNIQUE,
+    tag VARCHAR(256) NOT NULL UNIQUE,
     description VARCHAR(2056),
+	file_key TEXT NOT NULL,
     created_at timestamp default now(),
     INDEX (repository_id),
     INDEX (repository_id, tag),
