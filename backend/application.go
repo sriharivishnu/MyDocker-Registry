@@ -7,7 +7,6 @@ import (
 
 	config "github.com/sriharivishnu/shopify-challenge/config"
 	"github.com/sriharivishnu/shopify-challenge/server"
-	db "github.com/sriharivishnu/shopify-challenge/services"
 
 	"github.com/joho/godotenv"
 )
@@ -21,6 +20,6 @@ func main() {
 		os.Exit(1)
 	}
 	flag.Parse()
-	db.Init()
+	// db.Init()
 	server.Init()
 }
