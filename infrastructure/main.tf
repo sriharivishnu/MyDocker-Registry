@@ -4,6 +4,11 @@ resource "aws_elastic_beanstalk_application" "server" {
     description = var.eb_app_description
 }
 
+resource "random_string" "jwt_password" {
+  length  = 16
+  special = true
+}
+
 # Elastic beanstalk environment
 resource "aws_elastic_beanstalk_environment" "serverEnvironment" {
     name                = var.eb_env_name
@@ -106,6 +111,21 @@ resource "aws_elastic_beanstalk_environment" "serverEnvironment" {
       name      = "S3_BUCKET_KEY"
       value     = var.api_env_var_S3_BUCKET_KEY
     }
+    setting {
+      namespace = "aws:elasticbeanstalk:application:environment"
+      name      = "AWS_ACCESS_KEY_ID"
+      value     = aws_iam_access_key.server_access_key.id
+    }
+    setting {
+      namespace = "aws:elasticbeanstalk:application:environment"
+      name      = "AWS_SECRET_ACCESS_KEY"
+      value     = aws_iam_access_key.server_access_key.secret
+    }
+    setting {
+      namespace = "aws:elasticbeanstalk:application:environment"
+      name      = "JWT_SECRET"
+      value     = random_string.jwt_password.result
+    }
 
 }
 
@@ -119,4 +139,44 @@ resource "aws_s3_bucket" "b" {
     Name        = "My bucket for Shopify Challenge"
     Environment = var.api_env_var_ENVIRONMENT
   }
+}
+
+resource "aws_s3_bucket_public_access_block" "b_block" {
+  bucket = aws_s3_bucket.b.id
+
+  block_public_acls   = true
+  block_public_policy = true
+}
+
+resource "aws_iam_user" "server_access_user" {
+  name = "shopify-server-access-user"
+  force_destroy = true
+}
+
+resource "aws_iam_user_policy" "server_access_role" {
+  name = "shopify-server-access-policy"
+  user = aws_iam_user.server_access_user.name
+  
+  policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [
+        {
+            "Sid" = "Stmt1631409231466"
+            "Action" = [
+                "s3:DeleteObject",
+                "s3:GetObject",
+                "s3:GetObjectVersion",
+                "s3:ListBucket",
+                "s3:ListBucketVersions",
+                "s3:PutObject"
+            ]
+            "Effect" = "Allow"
+            "Resource" = "arn:aws:s3:::srihari-shopify-challenge/*"
+        },
+    ]
+  })
+}
+
+resource "aws_iam_access_key" "server_access_key" {
+  user = aws_iam_user.server_access_user.name
 }
