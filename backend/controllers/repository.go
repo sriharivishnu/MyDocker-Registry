@@ -1,4 +1,5 @@
 package controllers
 
-type RepositoryController interface {
-}
+type RepositoryController struct{}
+
+func (c *RepositoryController) Create(name string) {}

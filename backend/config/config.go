@@ -7,15 +7,14 @@ import (
 )
 
 type configType struct {
-	ENVIRONMENT        string
-	PORT               string
-	DOCKER_SERVER_HOST string
-	DATABASE_NAME      string
-	DATABASE_HOST      string
-	DATABASE_PORT      string
-	DATABASE_USER      string
-	DATABASE_PASSWORD  string
-	MOUNT_POINT        string
+	ENVIRONMENT       string
+	PORT              string
+	DATABASE_NAME     string
+	DATABASE_HOST     string
+	DATABASE_PORT     string
+	DATABASE_USER     string
+	DATABASE_PASSWORD string
+	S3_BUCKET_KEY     string
 }
 
 var Config *configType = &configType{}

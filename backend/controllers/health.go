@@ -6,10 +6,6 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-type IHealthController interface {
-	Status(c *gin.Context)
-}
-
 type HealthController struct{}
 
 func (h HealthController) Status(c *gin.Context) {
