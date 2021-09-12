@@ -5,7 +5,6 @@ import (
 
 	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
-	"github.com/sriharivishnu/shopify-challenge/middlewares"
 )
 
 func NewRouter() *gin.Engine {
@@ -30,8 +29,6 @@ func NewRouter() *gin.Engine {
 	router.GET("/health", func(c *gin.Context) {
 		c.JSON(200, gin.H{"message": "Status OK"})
 	})
-
-	router.Use(middlewares.AuthMiddleware())
 
 	SetUpV1(router)
 	return router

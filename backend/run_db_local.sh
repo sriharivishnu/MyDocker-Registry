@@ -1,0 +1,1 @@
+docker run -p 127.0.0.1:3306:3306  --name prod -e MARIADB_ROOT_PASSWORD=password -d mariadb:10.5

@@ -7,14 +7,17 @@ import (
 )
 
 type configType struct {
-	ENVIRONMENT       string
-	PORT              string
-	DATABASE_NAME     string
-	DATABASE_HOST     string
-	DATABASE_PORT     string
-	DATABASE_USER     string
-	DATABASE_PASSWORD string
-	S3_BUCKET_KEY     string
+	ENVIRONMENT           string
+	PORT                  string
+	DATABASE_NAME         string
+	DATABASE_HOST         string
+	DATABASE_PORT         string
+	DATABASE_USER         string
+	DATABASE_PASSWORD     string
+	S3_BUCKET_KEY         string
+	AWS_ACCESS_KEY_ID     string
+	AWS_SECRET_ACCESS_KEY string
+	JWT_SECRET            string
 }
 
 var Config *configType = &configType{}
