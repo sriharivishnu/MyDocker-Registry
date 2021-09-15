@@ -1,6 +1,7 @@
 package models
 
 import (
+	"log"
 	"time"
 
 	"github.com/pkg/errors"
@@ -33,8 +34,12 @@ func (repo *Repository) Create() error {
 	return nil
 }
 
-func (repo *Repository) GetRepositoryByName(name string) error {
-	err := db.DbConn.Get(repo, "select * from repository where name = ?", name)
+func (repo *Repository) GetRepositoryByName(username string, reponame string) error {
+	log.Println(username, reponame)
+	sql := `select r.* from repository r
+				INNER JOIN user u on r.owner_id = u.id
+				where u.username = ? and r.name = ?;`
+	err := db.DbConn.Get(repo, sql, username, reponame)
 	if err != nil {
 		return err
 	}
@@ -42,8 +47,11 @@ func (repo *Repository) GetRepositoryByName(name string) error {
 }
 
 func (repo *Repository) GetRepositoriesForUser(ownerId string) ([]Repository, error) {
+	sql := `select r.* from repository r
+		inner join user u on r.owner_id = u.id
+		where r.owner_id = ? or u.username = ?`
 	repos := []Repository{}
-	err := db.DbConn.Select(&repos, "select * from repository where owner_id = ?", ownerId)
+	err := db.DbConn.Select(&repos, sql, ownerId, ownerId)
 	if err != nil {
 		return nil, err
 	}

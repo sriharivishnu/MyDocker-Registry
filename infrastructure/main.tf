@@ -139,6 +139,22 @@ resource "aws_s3_bucket" "b" {
     Name        = "My bucket for Shopify Challenge"
     Environment = var.api_env_var_ENVIRONMENT
   }
+  cors_rule {
+        allowed_headers = [
+            "*",
+        ]
+        allowed_methods = [
+            "GET",
+            "PUT",
+            "POST",
+            "HEAD",
+        ]
+        allowed_origins = [
+            "*",
+        ]
+        expose_headers  = []
+        max_age_seconds = 3000
+    }
 }
 
 resource "aws_s3_bucket_public_access_block" "b_block" {

@@ -33,14 +33,16 @@ func (*RepositoryController) Create(c *gin.Context) {
 }
 
 func (*RepositoryController) GetForUser(c *gin.Context) {
-	curUser, _ := c.Get("user")
-	user := curUser.(models.User)
+	user_id, _ := c.Params.Get("user_id")
 
 	m := models.Repository{}
-	repos, err := m.GetRepositoriesForUser(user.Id)
+	repos, err := m.GetRepositoriesForUser(user_id)
 	if err != nil {
 		utils.RespondSQLError(c, err)
 		return
 	}
-	c.JSON(200, &repos)
+	c.JSON(200, gin.H{"repositories": &repos})
+}
+
+func (*RepositoryController) Search(c *gin.Context) {
 }

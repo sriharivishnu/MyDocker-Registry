@@ -1,6 +1,7 @@
 package controllers
 
 import (
+	"log"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
@@ -11,16 +12,13 @@ import (
 
 type ImageController struct{}
 
-func (*ImageController) GetImageTagsForRepoName(repoName string) ([]models.ImageTag, error) {
-	return nil, nil
-}
-
 func (*ImageController) GetUploadURL(c *gin.Context) {
-	repoName, foundRepo := c.Params.Get("repo")
-	imageTag, foundTag := c.Params.Get("tag")
+	username, _ := c.Params.Get("user_id")
+	repoName, _ := c.Params.Get("repo_id")
+	imageTag, _ := c.Params.Get("image_id")
 
-	if !foundRepo || !foundTag {
-		utils.RespondErrorString(c, "Invalid parameters", http.StatusBadRequest)
+	if len(imageTag) == 0 {
+		utils.RespondErrorString(c, "Please tag your image before pushing!", http.StatusNotFound)
 		return
 	}
 
@@ -28,13 +26,13 @@ func (*ImageController) GetUploadURL(c *gin.Context) {
 	user := curUser.(models.User)
 
 	repo := models.Repository{}
-	errGetRepo := repo.GetRepositoryByName(repoName)
+	errGetRepo := repo.GetRepositoryByName(username, repoName)
 	if errGetRepo != nil {
-		utils.RespondErrorString(c, "Could not find repository: "+repoName, http.StatusNotFound)
+		utils.RespondErrorString(c, "Repository not found", http.StatusNotFound)
 		return
 	}
-	if user.Id != repo.OwnerId {
-		utils.RespondErrorString(c, "User is not allowed to upload for this repository", http.StatusForbidden)
+	if repo.OwnerId != user.Id {
+		utils.RespondErrorString(c, "User is not authorized to push to repository", http.StatusForbidden)
 		return
 	}
 
@@ -49,14 +47,13 @@ func (*ImageController) GetUploadURL(c *gin.Context) {
 	c.JSON(200, gin.H{"upload_url": URL})
 }
 
-type createImageTagPayload struct {
-	RepoName    string `json:"repository_name"`
-	ImageTag    string `json:"image_tag"`
-	Description string `json:"description,omitempty"`
-}
-
 func (*ImageController) CreateImageTag(c *gin.Context) {
-	var payload createImageTagPayload
+	username, _ := c.Params.Get("user_id")
+	repoName, _ := c.Params.Get("repo_id")
+	var payload struct {
+		ImageTag    string `json:"tag"`
+		Description string `json:"description,omitempty"`
+	}
 	errInputFormat := c.BindJSON(&payload)
 	if errInputFormat != nil {
 		utils.RespondError(c, errInputFormat, http.StatusBadRequest)
@@ -67,9 +64,9 @@ func (*ImageController) CreateImageTag(c *gin.Context) {
 	user := curUser.(models.User)
 
 	repo := models.Repository{}
-	errGetRepo := repo.GetRepositoryByName(payload.RepoName)
+	errGetRepo := repo.GetRepositoryByName(username, repoName)
 	if errGetRepo != nil {
-		utils.RespondErrorString(c, "Could not find repository: "+payload.RepoName, http.StatusNotFound)
+		utils.RespondErrorString(c, "Could not find repository: "+username+"/"+repoName, http.StatusNotFound)
 		return
 	}
 	if user.Id != repo.OwnerId {
@@ -84,6 +81,7 @@ func (*ImageController) CreateImageTag(c *gin.Context) {
 		Tag:          payload.ImageTag,
 		FileKey:      key,
 	}
+	log.Println("tag" + payload.ImageTag)
 	errCreate := imageTag.Create()
 	if errCreate != nil {
 		utils.RespondSQLError(c, errCreate)
@@ -95,24 +93,26 @@ func (*ImageController) CreateImageTag(c *gin.Context) {
 }
 
 func (*ImageController) GetImage(c *gin.Context) {
-	repoName, foundRepo := c.Params.Get("repo")
-	tagName, foundTag := c.Params.Get("tag")
-	if !foundRepo || !foundTag {
-		utils.RespondErrorString(c, "Invalid parameters", http.StatusBadRequest)
-		return
-	}
+	username, _ := c.Params.Get("user_id")
+	repoName, _ := c.Params.Get("repo_id")
+	imageName, _ := c.Params.Get("image_id")
 
 	repo := models.Repository{}
-	errGetRep := repo.GetRepositoryByName(repoName)
+	errGetRep := repo.GetRepositoryByName(username, repoName)
 	if errGetRep != nil {
 		utils.RespondErrorString(c, "Could not find repository: "+repoName, http.StatusNotFound)
 		return
 	}
 
 	imageTag := models.ImageTag{}
-	errGetTag := imageTag.GetImageTagByRepoAndTag(repo.Id, tagName)
+	var errGetTag error
+	if imageName == "" || imageName == "latest" {
+		errGetTag = imageTag.GetLatestImageTag(repo.Id)
+	} else {
+		errGetTag = imageTag.GetImageTagByRepoAndTag(repo.Id, imageName)
+	}
 	if errGetTag != nil {
-		utils.RespondErrorString(c, "Could not find: "+repoName+":"+tagName, http.StatusNotFound)
+		utils.RespondErrorString(c, "Could not find: "+username+"/"+repoName+":"+imageName, http.StatusNotFound)
 		return
 	}
 
@@ -126,4 +126,24 @@ func (*ImageController) GetImage(c *gin.Context) {
 
 	c.JSON(200, gin.H{"download_url": URL, "data": imageTag})
 
+}
+
+func (*ImageController) GetImageTagsForRepoName(c *gin.Context) {
+	username, _ := c.Params.Get("user_id")
+	repoName, _ := c.Params.Get("repo_id")
+	repo := models.Repository{}
+
+	errGetRepo := repo.GetRepositoryByName(username, repoName)
+	if errGetRepo != nil {
+		utils.RespondErrorString(c, "Repository not found", 404)
+		return
+	}
+	getTags := models.ImageTag{}
+	imageTags, err := getTags.GetImageTagsForRepo(repo.Id)
+	if err != nil {
+		utils.RespondSQLError(c, err)
+		return
+	}
+
+	c.JSON(200, gin.H{"images": &imageTags})
 }

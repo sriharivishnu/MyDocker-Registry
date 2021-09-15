@@ -13,18 +13,31 @@ func SetUpV1(router *gin.Engine) {
 
 	v1 := router.Group("v1")
 
-	v1.POST("/signup", authController.SignUp)
-	v1.POST("/signin", authController.SignIn)
+	auth := v1.Group("auth")
+	auth.POST("/signup", authController.SignUp)
+	auth.POST("/login", authController.SignIn)
 
-	v1.Use(middlewares.AuthMiddleware())
+	users := v1.Group("users")
+	repositories := users.Group("/:user_id/repositories")
+	images := repositories.Group("/:repo_id/images")
 
-	repository := v1.Group("repositories")
-	repository.POST("", repoController.Create)
-	repository.GET("", repoController.GetForUser)
+	// /repositories
+	v1.GET("/repositories/search", repoController.Search)
 
-	image_tag := v1.Group("tag")
-	image_tag.GET("/:repo/:tag/upload_url", imageTagController.GetUploadURL)
-	image_tag.GET("/:repo/:tag", imageTagController.GetImage)
-	image_tag.POST("", imageTagController.CreateImageTag)
+	// /users/:id/repositories
+	repositories.GET("", repoController.GetForUser)
+	repositories.GET("/:repo_id", repoController.GetForUser)
+
+	// /users/:id/repositories/:id/images
+	images.GET("", imageTagController.GetImageTagsForRepoName)
+	images.GET("/:image_id", imageTagController.GetImage)
+
+	// endpoints that require auth
+	repositories.Use(middlewares.AuthMiddleware())
+	repositories.POST("", repoController.Create)
+
+	images.Use(middlewares.AuthMiddleware())
+	images.POST("", imageTagController.CreateImageTag)
+	images.GET("/:image_id/upload_url", imageTagController.GetUploadURL)
 
 }

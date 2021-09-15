@@ -19,7 +19,7 @@ func getUserFromToken(tokenString string) (*models.User, error) {
 	})
 	claims, ok := token.Claims.(jwt.MapClaims)
 	if !ok || err != nil {
-		return nil, err
+		return nil, fmt.Errorf("invalid token claims: token may be expired, please try logging in again")
 	}
 
 	user_id := claims["user_id"].(string)
@@ -34,14 +34,18 @@ func getUserFromToken(tokenString string) (*models.User, error) {
 func AuthMiddleware() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		auth := c.Request.Header.Get("Authorization")
+		if len(auth) <= 7 {
+			c.AbortWithStatusJSON(401, gin.H{"error": "invalid Authorization header"})
+			return
+		}
 		token := strings.TrimSpace(auth[7:])
 		user, err := getUserFromToken(token)
 		if err != nil {
-			c.AbortWithError(403, err)
+			c.AbortWithStatusJSON(401, gin.H{"error": err.Error()})
 			return
 		}
 		if user == nil {
-			c.AbortWithError(500, fmt.Errorf("cannot find user"))
+			c.AbortWithStatusJSON(500, gin.H{"error": "User not found"})
 			return
 		}
 		c.Set("user", *user)

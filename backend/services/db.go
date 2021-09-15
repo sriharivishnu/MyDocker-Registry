@@ -36,7 +36,7 @@ var imageTagTable = `
 create table if not exists image_tag (
     id CHAR(36) PRIMARY KEY default uuid(),
 	repository_id CHAR(36) NOT NULL,
-    tag VARCHAR(256) NOT NULL UNIQUE,
+    tag VARCHAR(256) NOT NULL,
     description VARCHAR(2056),
 	file_key TEXT NOT NULL,
     created_at timestamp default now(),

@@ -23,7 +23,7 @@ type IImageTag interface {
 }
 
 func (tag *ImageTag) Create() error {
-	sql := "INSERT INTO image_tag (repository_id, tag, description, file_key) VALUES (?, ?, ?, ?) returning *;"
+	sql := "INSERT INTO image_tag (repository_id, tag, description, file_key) VALUES (?, ?, ?, ?) ON DUPLICATE KEY UPDATE description = VALUES(description), file_key = VALUES(file_key) returning *;"
 	tx := db.DbConn.MustBegin()
 	err := tx.Get(tag, sql, tag.RepositoryId, tag.Tag, tag.Description, tag.FileKey)
 	if err != nil {
@@ -51,7 +51,7 @@ func (tag *ImageTag) GetLatestImageTag(repository_id string) error {
 	return nil
 }
 
-func (repo *Repository) GetImageTagsForRepo(repository_id string) ([]ImageTag, error) {
+func (tag *ImageTag) GetImageTagsForRepo(repository_id string) ([]ImageTag, error) {
 	imageTags := []ImageTag{}
 	err := db.DbConn.Select(&imageTags, "select * from image_tag where repository_id = ?", repository_id)
 	if err != nil {
