@@ -1,11 +1,15 @@
 import json
 import jwt
 import click
-from constants import CONFIG_FILE, API_URL
 import requests
 import tarfile
 import shutil
 import os
+
+try:
+    from .constants import CONFIG_FILE, API_URL
+except ImportError:
+    from constants import CONFIG_FILE, API_URL
 
 
 class Token:

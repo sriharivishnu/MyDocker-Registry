@@ -1,11 +1,15 @@
 import click
 import docker
 import getpass
-from helpers import doPost, doGet, Image, Token, zip_tar
 from tqdm import tqdm
 import requests
 import os
 from prettytable import PrettyTable
+
+try:
+    from .helpers import doPost, doGet, Image, Token, zip_tar
+except ImportError:
+    from helpers import doPost, doGet, Image, Token, zip_tar
 
 
 @click.group()
