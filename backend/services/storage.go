@@ -14,7 +14,7 @@ import (
 
 type Storage interface {
 	GetUploadURL(username string, repository string, tag string) (string, error)
-	GetDownloadURL(username string, repository string, tag string) (string, error)
+	GetDownloadURL(file_key string) (string, error)
 }
 
 type S3 struct{}

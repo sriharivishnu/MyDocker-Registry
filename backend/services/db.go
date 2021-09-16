@@ -22,11 +22,11 @@ var repositoryTable = `
 create table if not exists repository (
     id CHAR(36) PRIMARY KEY default uuid(),
 	owner_id CHAR(36) NOT NULL,
-	name VARCHAR(256),
+	name TEXT,
 	description VARCHAR(2056),
     created_at timestamp default now(),
-    INDEX(name),
     INDEX(owner_id),
+    FULLTEXT(name),
 	UNIQUE(owner_id, name),
     FOREIGN KEY (owner_id) REFERENCES user(id)
     ON DELETE CASCADE
@@ -41,7 +41,6 @@ create table if not exists image_tag (
 	file_key TEXT NOT NULL,
     created_at timestamp default now(),
     INDEX (repository_id),
-    INDEX (repository_id, tag),
 	UNIQUE(repository_id, tag),
     FOREIGN KEY (repository_id) REFERENCES repository(id)
 		ON DELETE CASCADE

@@ -1,53 +1,23 @@
 package controllers
 
 import (
-	"log"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
+	"github.com/sriharivishnu/shopify-challenge/layers"
 	"github.com/sriharivishnu/shopify-challenge/models"
 	"github.com/sriharivishnu/shopify-challenge/services"
 	"github.com/sriharivishnu/shopify-challenge/utils"
 )
 
-type ImageController struct{}
-
-func (*ImageController) GetUploadURL(c *gin.Context) {
-	username, _ := c.Params.Get("user_id")
-	repoName, _ := c.Params.Get("repo_id")
-	imageTag, _ := c.Params.Get("image_id")
-
-	if len(imageTag) == 0 {
-		utils.RespondErrorString(c, "Please tag your image before pushing!", http.StatusNotFound)
-		return
-	}
-
-	curUser, _ := c.Get("user")
-	user := curUser.(models.User)
-
-	repo := models.Repository{}
-	errGetRepo := repo.GetRepositoryByName(username, repoName)
-	if errGetRepo != nil {
-		utils.RespondErrorString(c, "Repository not found", http.StatusNotFound)
-		return
-	}
-	if repo.OwnerId != user.Id {
-		utils.RespondErrorString(c, "User is not authorized to push to repository", http.StatusForbidden)
-		return
-	}
-
-	storage := services.S3{}
-	URL, err := storage.GetUploadURL(user.Username, repoName, imageTag)
-
-	if err != nil {
-		utils.RespondError(c, err, http.StatusInternalServerError)
-		return
-	}
-
-	c.JSON(200, gin.H{"upload_url": URL})
+type ImageController struct {
+	RepositoryService layers.RepositoryLayer
+	ImageService      layers.ImageLayer
+	StorageService    services.Storage
 }
 
-func (*ImageController) CreateImageTag(c *gin.Context) {
+func (i *ImageController) PushImage(c *gin.Context) {
+	// Input validation
 	username, _ := c.Params.Get("user_id")
 	repoName, _ := c.Params.Get("repo_id")
 	var payload struct {
@@ -63,8 +33,8 @@ func (*ImageController) CreateImageTag(c *gin.Context) {
 	curUser, _ := c.Get("user")
 	user := curUser.(models.User)
 
-	repo := models.Repository{}
-	errGetRepo := repo.GetRepositoryByName(username, repoName)
+	// Fetch repository to push to
+	repo, errGetRepo := i.RepositoryService.GetRepositoryByName(username, repoName)
 	if errGetRepo != nil {
 		utils.RespondErrorString(c, "Could not find repository: "+username+"/"+repoName, http.StatusNotFound)
 		return
@@ -74,53 +44,53 @@ func (*ImageController) CreateImageTag(c *gin.Context) {
 		return
 	}
 
+	// create file key and image
 	key := utils.CreateFileKey(user.Username, repo.Name, payload.ImageTag)
-	imageTag := models.ImageTag{
-		RepositoryId: repo.Id,
-		Description:  payload.Description,
-		Tag:          payload.ImageTag,
-		FileKey:      key,
-	}
-	log.Println("tag" + payload.ImageTag)
-	errCreate := imageTag.Create()
+	imageTag, errCreate := i.ImageService.Create(repo.Id, payload.ImageTag, payload.Description, key)
 	if errCreate != nil {
 		utils.RespondSQLError(c, errCreate)
 		return
 	}
 
-	c.JSON(200, gin.H{"message": "Created image successfully", "id": imageTag.Id})
+	// get the upload URL for user to push to
+	// Ideally, we have another service (lambda) to notify
+	// server when upload is successful.
+	URL, err := i.StorageService.GetUploadURL(user.Username, repoName, payload.ImageTag)
+	if err != nil {
+		utils.RespondError(c, err, http.StatusInternalServerError)
+		return
+	}
 
+	c.JSON(200, gin.H{"message": "Created image successfully", "id": imageTag.Id, "upload_url": URL})
 }
 
-func (*ImageController) GetImage(c *gin.Context) {
+func (i *ImageController) PullImage(c *gin.Context) {
+	// input parameters
 	username, _ := c.Params.Get("user_id")
 	repoName, _ := c.Params.Get("repo_id")
 	imageName, _ := c.Params.Get("image_id")
+	if imageName == "" {
+		imageName = "latest"
+	}
 
-	repo := models.Repository{}
-	errGetRep := repo.GetRepositoryByName(username, repoName)
+	// Fetch repository
+	repo, errGetRep := i.RepositoryService.GetRepositoryByName(username, repoName)
 	if errGetRep != nil {
 		utils.RespondErrorString(c, "Could not find repository: "+repoName, http.StatusNotFound)
 		return
 	}
 
-	imageTag := models.ImageTag{}
-	var errGetTag error
-	if imageName == "" || imageName == "latest" {
-		errGetTag = imageTag.GetLatestImageTag(repo.Id)
-	} else {
-		errGetTag = imageTag.GetImageTagByRepoAndTag(repo.Id, imageName)
-	}
+	// Get image from repository
+	imageTag, errGetTag := i.ImageService.GetImageTagByRepoAndTag(repo.Id, imageName)
 	if errGetTag != nil {
 		utils.RespondErrorString(c, "Could not find: "+username+"/"+repoName+":"+imageName, http.StatusNotFound)
 		return
 	}
 
-	storage := services.S3{}
-	URL, err := storage.GetDownloadURL(imageTag.FileKey)
-
-	if err != nil {
-		utils.RespondError(c, err, http.StatusInternalServerError)
+	// Get the download_url
+	URL, errGetURL := i.StorageService.GetDownloadURL(imageTag.FileKey)
+	if errGetURL != nil {
+		utils.RespondError(c, errGetURL, http.StatusInternalServerError)
 		return
 	}
 
@@ -128,18 +98,16 @@ func (*ImageController) GetImage(c *gin.Context) {
 
 }
 
-func (*ImageController) GetImageTagsForRepoName(c *gin.Context) {
+func (i *ImageController) GetImageTagsForRepoName(c *gin.Context) {
 	username, _ := c.Params.Get("user_id")
 	repoName, _ := c.Params.Get("repo_id")
-	repo := models.Repository{}
 
-	errGetRepo := repo.GetRepositoryByName(username, repoName)
+	repo, errGetRepo := i.RepositoryService.GetRepositoryByName(username, repoName)
 	if errGetRepo != nil {
 		utils.RespondErrorString(c, "Repository not found", 404)
 		return
 	}
-	getTags := models.ImageTag{}
-	imageTags, err := getTags.GetImageTagsForRepo(repo.Id)
+	imageTags, err := i.ImageService.GetImageTagsForRepo(repo.Id)
 	if err != nil {
 		utils.RespondSQLError(c, err)
 		return

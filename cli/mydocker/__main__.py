@@ -67,16 +67,20 @@ def push(image, description):
     with open(tar_file_name, "wb") as f:
         for chunk in dockerImage.save(named=True):
             f.write(chunk)
-
+    
+    click.echo("Compressing Image...")
     zip_tar(tar_file_name)
     tar_file_name += ".gz"
 
     token = Token()
-    upload_url = doGet(
-        f"/users/{imageDetails.user}/repositories/{imageDetails.repository}/images/{imageDetails.tag}/upload_url",
+    create_image_response = doPost(
+        f"/users/{imageDetails.user}/repositories/{imageDetails.repository}/images",
+        payload={"tag": imageDetails.tag, "description": description},
         token=token,
-    )["upload_url"]
+    )
+    upload_url = create_image_response["upload_url"]
 
+    click.echo("Uploading to repository...")
     with open(tar_file_name, "rb") as tar_file:
         try:
             r = requests.put(
@@ -92,15 +96,9 @@ def push(image, description):
             os.remove(tar_file_name)
             raise click.ClickException(str(e))
 
-    click.echo(
-        doPost(
-            f"/users/{imageDetails.user}/repositories/{imageDetails.repository}/images",
-            payload={"tag": imageDetails.tag, "description": description},
-            token=token,
-        )["message"]
-    )
-
     os.remove(tar_file_name)
+
+    click.echo(create_image_response["message"])
 
 
 @main.command()
@@ -115,21 +113,32 @@ def pull(image):
 
     download_url = imageResponse["download_url"]
     response = requests.get(download_url, stream=True)
-    print(response)
+
     if response.status_code != 200:
-        raise click.ClickException("Could not pull image from repository")
+        raise click.ClickException("Failed to pull image from repository")
 
     tar_file_name = imageDetails.name.replace(":", "-").replace("/", "_") + ".tar.gz"
 
+    file_size = response.headers.get("Content-length", 0)
+    block_size = 1024 * 1024  # 1 MB
     with open(tar_file_name, "wb") as tarFile:
-        for data in tqdm(response.iter_content()):
-            tarFile.write(data)
+        progress_bar = tqdm(unit="iB", unit_scale=True, total=int(file_size))
+        for data in response.iter_content(block_size):
+            if data:
+                progress_bar.update(len(data))
+                tarFile.write(data)
+        progress_bar.close()
 
     client = docker.from_env()
     images = client.images.load(open(tar_file_name, "rb").read())
 
     for image in images:
-        click.echo("Created image: %s" % image.id_attribute)
+
+        print(
+            "\nSuccessfully pulled image: %s" % image.tags[0]
+            if len(image.tags) > 0
+            else image.id,
+        )
 
     os.remove(tar_file_name)
 

@@ -1,11 +1,9 @@
 package models
 
 import (
-	"log"
+	"fmt"
+	"strings"
 	"time"
-
-	"github.com/pkg/errors"
-	db "github.com/sriharivishnu/shopify-challenge/services"
 )
 
 type Repository struct {
@@ -16,48 +14,13 @@ type Repository struct {
 	CreatedAt   time.Time `json:"created_at,omitempty" db:"created_at"`
 }
 
-type IRepository interface {
-	Create() error
-	GetRepositoryByName(name string) error
-	GetRepositoriesForUser(ownerId string) ([]Repository, error)
-	Search(query string, limit int, offset int) ([]Repository, error)
-}
-
-func (repo *Repository) Create() error {
-	tx := db.DbConn.MustBegin()
-	err := tx.Get(repo, "INSERT INTO repository (name, description, owner_id) VALUES (?, ?, ?) returning *;", repo.Name, repo.Description, repo.OwnerId)
-	if err != nil {
-		tx.Rollback()
-		return errors.Wrap(err, "create repository error")
+func (repo Repository) Validate() error {
+	if len(repo.Name) == 0 {
+		return fmt.Errorf("Repository name must not be empty")
 	}
-	tx.Commit()
+	if strings.Contains(repo.Name, "/") || strings.Contains(repo.Name, "\\") {
+		return fmt.Errorf("Repository name contains unknown characters: %s", repo.Name)
+	}
+
 	return nil
-}
-
-func (repo *Repository) GetRepositoryByName(username string, reponame string) error {
-	log.Println(username, reponame)
-	sql := `select r.* from repository r
-				INNER JOIN user u on r.owner_id = u.id
-				where u.username = ? and r.name = ?;`
-	err := db.DbConn.Get(repo, sql, username, reponame)
-	if err != nil {
-		return err
-	}
-	return nil
-}
-
-func (repo *Repository) GetRepositoriesForUser(ownerId string) ([]Repository, error) {
-	sql := `select r.* from repository r
-		inner join user u on r.owner_id = u.id
-		where r.owner_id = ? or u.username = ?`
-	repos := []Repository{}
-	err := db.DbConn.Select(&repos, sql, ownerId, ownerId)
-	if err != nil {
-		return nil, err
-	}
-	return repos, nil
-}
-
-func (repo *Repository) Search(query string, limit int, offset int) ([]Repository, error) {
-	return nil, nil
 }

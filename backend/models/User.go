@@ -1,11 +1,8 @@
 package models
 
 import (
-	"log"
+	"fmt"
 	"time"
-
-	"github.com/pkg/errors"
-	db "github.com/sriharivishnu/shopify-challenge/services"
 )
 
 type User struct {
@@ -15,36 +12,14 @@ type User struct {
 	CreatedAt time.Time `json:"created_at,omitempty" db:"created_at"`
 }
 
-type IUser interface {
-	Create(username string, password string) error
-	GetByUsername(username string) error
-	GetById(id string) error
-}
-
-func (user *User) Create() error {
-	tx := db.DbConn.MustBegin()
-	log.Printf("%s %s", user.Username, user.Password)
-	err := tx.Get(user, "INSERT INTO user (username, password) VALUES (?, ?) returning *;", user.Username, user.Password)
-	if err != nil {
-		tx.Rollback()
-		return errors.Wrap(err, "create user error")
+func (user User) Validate() error {
+	if len(user.Username) < 5 {
+		return fmt.Errorf("username must be at least 5 characters in length")
 	}
-	tx.Commit()
-	return nil
-}
 
-func (user *User) GetByUsername(username string) error {
-	err := db.DbConn.Get(user, "select * from user where username = ?", username)
-	if err != nil {
-		return err
+	if len(user.Password) < 6 {
+		return fmt.Errorf("password must be at least 6 characters in length")
 	}
-	return nil
-}
 
-func (user *User) GetById(id string) error {
-	err := db.DbConn.Get(user, "select * from user where id = ?", id)
-	if err != nil {
-		return err
-	}
 	return nil
 }

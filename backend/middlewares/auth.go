@@ -7,10 +7,11 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/golang-jwt/jwt"
 	"github.com/sriharivishnu/shopify-challenge/config"
+	"github.com/sriharivishnu/shopify-challenge/layers"
 	"github.com/sriharivishnu/shopify-challenge/models"
 )
 
-func getUserFromToken(tokenString string) (*models.User, error) {
+func getUserFromToken(tokenString string, userService layers.UserLayer) (*models.User, error) {
 	token, err := jwt.Parse(tokenString, func(token *jwt.Token) (interface{}, error) {
 		if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
 			return nil, fmt.Errorf("unexpected signing method: %v", token.Header["alg"])
@@ -23,15 +24,14 @@ func getUserFromToken(tokenString string) (*models.User, error) {
 	}
 
 	user_id := claims["user_id"].(string)
-	user := &models.User{}
-	errGetUser := user.GetById(user_id)
+	user, errGetUser := userService.GetByID(user_id)
 	if errGetUser != nil {
 		return nil, errGetUser
 	}
-	return user, nil
+	return &user, nil
 }
 
-func AuthMiddleware() gin.HandlerFunc {
+func AuthMiddleware(userService layers.UserLayer) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		auth := c.Request.Header.Get("Authorization")
 		if len(auth) <= 7 {
@@ -39,7 +39,7 @@ func AuthMiddleware() gin.HandlerFunc {
 			return
 		}
 		token := strings.TrimSpace(auth[7:])
-		user, err := getUserFromToken(token)
+		user, err := getUserFromToken(token, userService)
 		if err != nil {
 			c.AbortWithStatusJSON(401, gin.H{"error": err.Error()})
 			return
