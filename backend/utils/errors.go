@@ -1,7 +1,7 @@
 package utils
 
 import (
-	"fmt"
+	"log"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
@@ -14,23 +14,25 @@ func CheckSQLError(err error) bool {
 }
 
 func RespondSQLError(c *gin.Context, err error) {
-	fmt.Printf("\x1b[31;1m%s\x1b[0m\n", err)
+	log.Printf("\x1b[31;1m%s\x1b[0m\n", err)
 	sqlErr, ok := err.(*mysql.MySQLError)
 	if !ok {
+		RespondError(c, err, 500)
 		return
 	}
 	if sqlErr.Number == 1062 || sqlErr.Number == 1169 {
 		RespondErrorString(c, "This Resource Already Exists!", http.StatusConflict)
 		return
 	}
-	RespondError(c, err, 500)
+	RespondErrorString(c, "Internal Server Error", 500)
 }
 
 func RespondError(c *gin.Context, err error, errorCode int) {
 	c.JSON(errorCode, gin.H{"error": err.Error()})
-	fmt.Printf("\x1b[31;1m%s\x1b[0m\n", err)
+	log.Printf("\x1b[31;1m%s\x1b[0m\n", err)
 }
 
 func RespondErrorString(c *gin.Context, message string, errorCode int) {
 	c.JSON(errorCode, gin.H{"error": message})
+	log.Printf("\x1b[31;1m%s\x1b[0m\n", message)
 }

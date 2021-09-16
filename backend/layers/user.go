@@ -4,7 +4,6 @@ import (
 	"time"
 
 	"github.com/golang-jwt/jwt"
-	"github.com/pkg/errors"
 	"github.com/sriharivishnu/shopify-challenge/config"
 	"github.com/sriharivishnu/shopify-challenge/models"
 	db "github.com/sriharivishnu/shopify-challenge/services"
@@ -25,7 +24,7 @@ func (service *UserService) Create(username, password string) (models.User, erro
 	err := tx.Get(&user, "INSERT INTO user (username, password) VALUES (?, ?) returning *;", username, password)
 	if err != nil {
 		tx.Rollback()
-		return user, errors.Wrap(err, "create user error")
+		return user, err
 	}
 	tx.Commit()
 	return user, nil

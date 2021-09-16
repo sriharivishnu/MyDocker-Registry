@@ -46,5 +46,11 @@ func (service *RepositoryService) GetRepositoriesForUser(ownerId string) ([]mode
 }
 
 func (service *RepositoryService) Search(query string, limit int, offset int) ([]models.Repository, error) {
-	return nil, nil
+	repos := []models.Repository{}
+	sql := `select r.* from repository r
+		inner join user u on r.owner_id = u.id
+		where MATCH(r.name) AGAINST(? IN BOOLEAN MODE) limit ? offset ?`
+	query = "*" + query + "*"
+	err := db.DbConn.Select(&repos, sql, query, limit, offset)
+	return repos, err
 }

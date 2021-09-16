@@ -39,7 +39,7 @@ func (controller *AuthController) SignUp(c *gin.Context) {
 	// create the user
 	user, errUserCreate := controller.UserService.Create(user.Username, user.Password)
 	if errUserCreate != nil {
-		utils.RespondError(c, errUserCreate, http.StatusInternalServerError)
+		utils.RespondSQLError(c, errUserCreate)
 		return
 	}
 
@@ -50,7 +50,7 @@ func (controller *AuthController) SignUp(c *gin.Context) {
 		return
 	}
 
-	c.JSON(200, gin.H{"message": "Signed up successfully", "token": token, "user": &user})
+	c.JSON(200, gin.H{"message": "Signed up successfully", "token": token})
 
 }
 
@@ -68,7 +68,7 @@ func (controller *AuthController) SignIn(c *gin.Context) {
 	userDB, errGetUser := controller.UserService.GetByUsername(userPayload.Username)
 	if errGetUser != nil {
 		if errGetUser == sql.ErrNoRows {
-			utils.RespondErrorString(c, "Unauthorized", http.StatusUnauthorized)
+			utils.RespondErrorString(c, "Username or password is incorrect. Please check your login details and try again.", http.StatusUnauthorized)
 			return
 		}
 		utils.RespondError(c, errGetUser, http.StatusInternalServerError)
@@ -77,7 +77,7 @@ func (controller *AuthController) SignIn(c *gin.Context) {
 
 	// compare password
 	if errHash := bcrypt.CompareHashAndPassword([]byte(userDB.Password), []byte(userPayload.Password)); errHash != nil {
-		utils.RespondErrorString(c, "Unauthorized", http.StatusUnauthorized)
+		utils.RespondErrorString(c, "Username or password is incorrect. Please check your login details and try again.", http.StatusUnauthorized)
 		return
 	}
 

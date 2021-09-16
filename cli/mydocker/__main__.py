@@ -67,7 +67,7 @@ def push(image, description):
     with open(tar_file_name, "wb") as f:
         for chunk in dockerImage.save(named=True):
             f.write(chunk)
-    
+
     click.echo("Compressing Image...")
     zip_tar(tar_file_name)
     tar_file_name += ".gz"
@@ -190,8 +190,17 @@ def images(user, repository):
 
 @main.command()
 @click.argument("query")
-def search(query):
-    pass
+@click.option("--offset", default=0)
+def search(query, offset):
+    """Retrieves the images for a given repository"""
+    response = doGet(f"/repositories/search?query={query}&offset={offset}")
+    repositories = response["results"]
+    table = PrettyTable()
+    table.field_names = ["Name", "Description", "Created"]
+    for x in repositories:
+        table.add_row([x.get("name"), x.get("description"), x.get("created_at")])
+
+    print(table)
 
 
 if __name__ == "__main__":

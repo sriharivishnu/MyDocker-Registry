@@ -53,11 +53,18 @@ func (r *RepositoryController) GetForUser(c *gin.Context) {
 }
 
 func (r *RepositoryController) Search(c *gin.Context) {
-	query, _ := c.Params.Get("query")
-	offsetStr, _ := c.Params.Get("offset")
+	params := c.Request.URL.Query()
+	query := params.Get("query")
+	if query == "" {
+		utils.RespondErrorString(c, "Query cannot be empty", 400)
+		return
+	}
+
+	offsetStr := params.Get("offset")
 	offset, offsetErr := strconv.Atoi(offsetStr)
 	if offsetErr != nil {
 		utils.RespondErrorString(c, "Offset must be a number", 400)
+		return
 	}
 	repos, err := r.RepositoryService.Search(query, 10, offset)
 	if err != nil {

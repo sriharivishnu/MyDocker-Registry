@@ -50,13 +50,15 @@ class Token:
 def _readResponse(resp):
     try:
         json_response = resp.json()
+        if resp.status_code != 200:
+            if "error" in json_response:
+                raise click.ClickException(json_response["error"])
+            raise click.ClickException("Unknown error occurred while calling API")
+        return json_response
+    except click.ClickException as c:
+        raise c
     except Exception as e:
-        resp.raise_for_status()
-    if resp.status_code != 200:
-        if "error" in json_response:
-            raise Exception(json_response["error"])
-        raise Exception("Unknown error occurred while calling API")
-    return json_response
+        raise click.ClickException("Unknown error occurred while calling API")
 
 
 def doPost(endpoint: str, payload: dict, token: Token = None) -> dict:

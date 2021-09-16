@@ -35,8 +35,5 @@ func (service *ImageService) GetImageTagByRepoAndTag(repository_id, tagName stri
 func (service *ImageService) GetImageTagsForRepo(repository_id string) ([]models.ImageTag, error) {
 	imageTags := []models.ImageTag{}
 	err := db.DbConn.Select(&imageTags, "select * from image_tag where repository_id = ?", repository_id)
-	if err != nil {
-		return nil, err
-	}
-	return imageTags, nil
+	return imageTags, err
 }
