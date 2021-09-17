@@ -2,6 +2,7 @@ package controllers
 
 import (
 	"net/http"
+	"strings"
 
 	"github.com/gin-gonic/gin"
 	"github.com/sriharivishnu/shopify-challenge/layers"
@@ -24,10 +25,12 @@ func (i *ImageController) PushImage(c *gin.Context) {
 		ImageTag    string `json:"tag"`
 		Description string `json:"description,omitempty"`
 	}
-	errInputFormat := c.BindJSON(&payload)
-	if errInputFormat != nil {
+	if errInputFormat := c.BindJSON(&payload); errInputFormat != nil {
 		utils.RespondError(c, errInputFormat, http.StatusBadRequest)
 		return
+	}
+	if strings.TrimSpace(payload.ImageTag) == "" {
+		payload.ImageTag = "latest"
 	}
 
 	curUser, _ := c.Get("user")
@@ -69,7 +72,7 @@ func (i *ImageController) PullImage(c *gin.Context) {
 	username, _ := c.Params.Get("user_id")
 	repoName, _ := c.Params.Get("repo_id")
 	imageName, _ := c.Params.Get("image_id")
-	if imageName == "" {
+	if strings.TrimSpace(imageName) == "" {
 		imageName = "latest"
 	}
 

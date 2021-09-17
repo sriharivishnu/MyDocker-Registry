@@ -9,6 +9,6 @@ rds_db_port = 3306
 rds_db_user = "admin"
 
 # Environment Variables
-api_env_var_ENVIRONMENT = "prod"
+api_env_var_ENVIRONMENT = "production"
 api_env_var_PORT = "5000"
 api_env_var_S3_BUCKET_KEY = "srihari-shopify-challenge"

@@ -4,6 +4,29 @@ resource "aws_elastic_beanstalk_application" "server" {
     description = var.eb_app_description
 }
 
+resource "aws_security_group" "server-sg" {
+  name = "server-sg"
+
+  description = "Server (terraform-managed)"
+  vpc_id      = aws_vpc.main-vpc.id
+
+  # Allow all outbound traffic.
+  egress {
+    from_port   = 0
+    to_port     = 0
+    protocol    = "-1"
+  }
+}
+
+resource "aws_security_group_rule" "server-to-rds" {
+    type = "ingress"
+    from_port   = tonumber(var.rds_db_port)
+    to_port     = tonumber(var.rds_db_port)
+    protocol    = "tcp"
+    security_group_id = aws_security_group.server-sg.id
+    source_security_group_id = aws_security_group.rds-sg.id
+}
+
 resource "random_string" "jwt_password" {
   length  = 16
   special = true
@@ -60,14 +83,24 @@ resource "aws_elastic_beanstalk_environment" "serverEnvironment" {
         value     = var.eb_asg_max_size
     }
     setting {
+      namespace = "aws:autoscaling:launchconfiguration"
+      name = "IamInstanceProfile"
+      value = "aws-elasticbeanstalk-ec2-role"
+    }
+    setting {
+      namespace = "aws:autoscaling:launchconfiguration"
+      name = "SecurityGroups"
+      value = aws_security_group.server-sg.id
+    }
+    setting {
         namespace = "aws:elasticbeanstalk:healthreporting:system"
         name      = "SystemType"
         value     = "enhanced"
     }
     setting {
-      namespace = "aws:autoscaling:launchconfiguration"
-      name = "IamInstanceProfile"
-      value = "aws-elasticbeanstalk-ec2-role"
+      namespace = "aws:elasticbeanstalk:cloudwatch:logs"
+      name = "StreamLogs"
+      value = "true"
     }
 
     # ENVIRONMENT VARS

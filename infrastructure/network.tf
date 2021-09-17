@@ -54,6 +54,7 @@ resource "aws_internet_gateway" "main-igw" {
     }
 }
 
+// public route table
 resource "aws_route_table" "main-public-crt" {
     vpc_id = aws_vpc.main-vpc.id
     

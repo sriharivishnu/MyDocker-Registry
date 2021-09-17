@@ -4,20 +4,21 @@ resource "aws_security_group" "rds-sg" {
   description = "RDS (terraform-managed)"
   vpc_id      = aws_vpc.main-vpc.id
 
-  # Only MySQL in
-  ingress {
-    from_port   = tonumber(var.rds_db_port)
-    to_port     = tonumber(var.rds_db_port)
-    protocol    = "tcp"
-    cidr_blocks = ["10.0.0.0/24"]
-  }
-
   # Allow all outbound traffic.
   egress {
     from_port   = 0
     to_port     = 0
     protocol    = "-1"
   }
+}
+
+resource "aws_security_group_rule" "rds-to-server" {
+    type = "ingress"
+    from_port   = tonumber(var.rds_db_port)
+    to_port     = tonumber(var.rds_db_port)
+    protocol    = "tcp"
+    security_group_id = aws_security_group.rds-sg.id
+    source_security_group_id = aws_security_group.server-sg.id
 }
 
 resource "aws_db_subnet_group" "rds_subnet_group" {
@@ -34,6 +35,7 @@ resource "random_string" "db_password" {
 }
 # RDS MariaDB database
 resource "aws_db_instance" "database" {
+  identifier           = "shopify-challenge-db"
   allocated_storage    = 10
   engine               = "mariadb"
   engine_version       = "10.5"
