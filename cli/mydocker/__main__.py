@@ -170,7 +170,7 @@ def pull(image):
     images = client.images.load(open(tar_file_name, "rb").read())
 
     for image in images:
-
+        image.tag(imageDetails.name)
         click.echo(
             "\nSuccessfully pulled image: %s" % image.tags[0]
             if len(image.tags) > 0
