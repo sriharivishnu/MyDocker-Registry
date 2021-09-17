@@ -1,12 +1,12 @@
-package layers
+package services
 
 import (
 	"time"
 
 	"github.com/golang-jwt/jwt"
 	"github.com/sriharivishnu/shopify-challenge/config"
+	db "github.com/sriharivishnu/shopify-challenge/external"
 	"github.com/sriharivishnu/shopify-challenge/models"
-	db "github.com/sriharivishnu/shopify-challenge/services"
 )
 
 type UserLayer interface {

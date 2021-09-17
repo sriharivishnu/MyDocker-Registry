@@ -5,14 +5,14 @@ import (
 	"net/http"
 
 	"github.com/gin-gonic/gin"
-	"github.com/sriharivishnu/shopify-challenge/layers"
 	"github.com/sriharivishnu/shopify-challenge/models"
+	"github.com/sriharivishnu/shopify-challenge/services"
 	"github.com/sriharivishnu/shopify-challenge/utils"
 	"golang.org/x/crypto/bcrypt"
 )
 
 type AuthController struct {
-	UserService layers.UserLayer
+	UserService services.UserLayer
 }
 
 func (controller *AuthController) SignUp(c *gin.Context) {

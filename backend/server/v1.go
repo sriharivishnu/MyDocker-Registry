@@ -3,7 +3,7 @@ package server
 import (
 	"github.com/gin-gonic/gin"
 	"github.com/sriharivishnu/shopify-challenge/controllers"
-	"github.com/sriharivishnu/shopify-challenge/layers"
+	"github.com/sriharivishnu/shopify-challenge/external"
 	"github.com/sriharivishnu/shopify-challenge/middlewares"
 	"github.com/sriharivishnu/shopify-challenge/services"
 )
@@ -11,15 +11,15 @@ import (
 func SetUpV1(router *gin.Engine) {
 	// set up controllers and inject dependencies
 	authController := &controllers.AuthController{
-		UserService: &layers.UserService{},
+		UserService: &services.UserService{},
 	}
 	repoController := &controllers.RepositoryController{
-		RepositoryService: &layers.RepositoryService{},
+		RepositoryService: &services.RepositoryService{},
 	}
 	imageTagController := &controllers.ImageController{
-		RepositoryService: &layers.RepositoryService{},
-		ImageService:      &layers.ImageService{},
-		StorageService:    &services.S3{},
+		RepositoryService: &services.RepositoryService{},
+		ImageService:      &services.ImageService{},
+		StorageService:    &external.S3{},
 	}
 
 	// Set up routes
@@ -45,9 +45,9 @@ func SetUpV1(router *gin.Engine) {
 	images.GET("/:image_id", imageTagController.PullImage)
 
 	// endpoints that require auth
-	repositories.Use(middlewares.AuthMiddleware(&layers.UserService{}))
+	repositories.Use(middlewares.AuthMiddleware(&services.UserService{}))
 	repositories.POST("", repoController.Create)
 
-	images.Use(middlewares.AuthMiddleware(&layers.UserService{}))
+	images.Use(middlewares.AuthMiddleware(&services.UserService{}))
 	images.POST("", imageTagController.PushImage)
 }

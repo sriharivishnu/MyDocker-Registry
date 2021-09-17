@@ -5,8 +5,9 @@ package mocks
 import (
 	context "context"
 
-	s3 "github.com/aws/aws-sdk-go-v2/service/s3"
 	mock "github.com/stretchr/testify/mock"
+
+	s3 "github.com/aws/aws-sdk-go-v2/service/s3"
 
 	v4 "github.com/aws/aws-sdk-go-v2/aws/signer/v4"
 )

@@ -30,7 +30,7 @@ class Token:
                 raise Exception("invalid token")
         except Exception:
             raise click.UsageError(
-                "Could not find login credentials. Please obtain credentials with the signup or login commands"
+                "Could not find a login token. Please obtain a token with the signup or login command"
             )
         self._cached_token = creds
         return creds
@@ -77,6 +77,7 @@ def doGet(endpoint: str, token: Token = None) -> dict:
         headers = {}
     try:
         resp = requests.get(url=getConfig("api_url") + endpoint, headers=headers)
+        print(getConfig("api_url"))
         json_response = _readResponse(resp)
     except Exception as e:
         raise click.ClickException(str(e))

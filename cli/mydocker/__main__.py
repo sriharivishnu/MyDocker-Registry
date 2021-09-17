@@ -8,21 +8,53 @@ from prettytable import PrettyTable
 
 try:
     from .helpers import doPost, doGet, Image, Token, zip_tar
-    from .config import saveConfig
+    from .config import saveConfig, CONFIG_FILE
 except ImportError:
     from helpers import doPost, doGet, Image, Token, zip_tar
-    from config import saveConfig
+    from config import saveConfig, CONFIG_FILE
 
 
 @click.group()
-@click.option("--host", required=False, default=None, help="Set the API URL to connect to")
-def main(host):
+def main():
     """
     CLI application that provides methods for testing the custom docker repository
     """
-    if host:
-        saveConfig({host: host})
     pass
+
+
+@main.command()
+@click.option(
+    "--host",
+    required=False,
+    default=None,
+    help="Saves a custom API URL to use for requests",
+)
+@click.option(
+    "--reset",
+    is_flag=True,
+    required=False,
+    help="Resets configuration to default settings",
+)
+@click.option(
+    "--curuser",
+    is_flag=True,
+    required=False,
+    help="Outputs the current logged in user",
+)
+def config(host, reset, curuser):
+    """Set URL, reset settings, or get current user"""
+    if host:
+        saveConfig({"api_url": host})
+        click.echo("Successfully set new API URL to %s" % host)
+    elif reset:
+        os.remove(CONFIG_FILE)
+        click.echo("Successfully reset config to default settings")
+    elif curuser:
+        token = Token()
+        click.echo("Username: %s" % token.user["username"])
+
+    else:
+        click.echo("No arguments were supplied. Config was not changed")
 
 
 @main.command()
@@ -30,10 +62,6 @@ def signup():
     """Sign up to push images to a repository"""
     username = input("Username: ")
     password = getpass.getpass()
-    if len(username) <= 5 or len(password) <= 6:
-        raise click.UsageError(
-            message="Invalid username or password. Please make sure username has at least 5 characters, and password has at least 6 characters."
-        )
 
     json_response = doPost("/auth/signup", {"username": username, "password": password})
 
@@ -56,7 +84,7 @@ def login():
 @click.argument("image")
 @click.option("--description", required=False, default="")
 def push(image, description):
-    """Pushes image to the repository. Expects image in format <username>/<repository>:tag"""
+    """Pushes an image to the repository. Expects image in format <username>/<repository>:tag"""
     imageDetails = Image(image).parse()
 
     client = docker.from_env()
@@ -158,12 +186,12 @@ def pull(image):
 def create(repository, description):
     """Creates a repository"""
     token = Token()
-    doPost(
+    response = doPost(
         f"""/users/{token.user["username"]}/repositories""",
         {"name": repository, "description": description},
         token=Token(),
     )
-    click.echo("Successfully created repository: %s" % repository)
+    click.echo(response["message"])
 
 
 @main.command()
@@ -203,9 +231,8 @@ def images(user, repository):
 @click.argument("query")
 @click.option("--offset", default=0)
 def search(query, offset):
-    """Retrieves the images for a given repository"""
+    """Search for image repository"""
     response = doGet(f"/repositories/search?query={query}&offset={offset}")
-    print (response)
     repositories = response["results"]
     table = PrettyTable()
     table.field_names = ["User", "Repository", "Description", "# of Images", "Created"]

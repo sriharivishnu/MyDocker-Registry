@@ -2,8 +2,9 @@ package models
 
 import (
 	"fmt"
-	"strings"
 	"time"
+
+	"github.com/sriharivishnu/shopify-challenge/utils"
 )
 
 type Repository struct {
@@ -18,9 +19,8 @@ func (repo Repository) Validate() error {
 	if len(repo.Name) == 0 {
 		return fmt.Errorf("Repository name must not be empty")
 	}
-	if strings.Contains(repo.Name, "/") || strings.Contains(repo.Name, "\\") {
-		return fmt.Errorf("Repository name contains unknown characters: %s", repo.Name)
+	if !utils.IsValidName(repo.Name) {
+		return fmt.Errorf("Repository name contains invalid characters. Please only use letters, numbers, and/or -,_")
 	}
-
 	return nil
 }

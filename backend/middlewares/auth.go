@@ -1,17 +1,19 @@
 package middlewares
 
 import (
+	"database/sql"
+	"errors"
 	"fmt"
 	"strings"
 
 	"github.com/gin-gonic/gin"
 	"github.com/golang-jwt/jwt"
 	"github.com/sriharivishnu/shopify-challenge/config"
-	"github.com/sriharivishnu/shopify-challenge/layers"
 	"github.com/sriharivishnu/shopify-challenge/models"
+	"github.com/sriharivishnu/shopify-challenge/services"
 )
 
-func getUserFromToken(tokenString string, userService layers.UserLayer) (*models.User, error) {
+func getUserFromToken(tokenString string, userService services.UserLayer) (*models.User, error) {
 	token, err := jwt.Parse(tokenString, func(token *jwt.Token) (interface{}, error) {
 		if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
 			return nil, fmt.Errorf("unexpected signing method: %v", token.Header["alg"])
@@ -26,12 +28,15 @@ func getUserFromToken(tokenString string, userService layers.UserLayer) (*models
 	user_id := claims["user_id"].(string)
 	user, errGetUser := userService.GetByID(user_id)
 	if errGetUser != nil {
+		if errGetUser == sql.ErrNoRows {
+			return nil, errors.New("user not found. please try logging in again")
+		}
 		return nil, errGetUser
 	}
 	return &user, nil
 }
 
-func AuthMiddleware(userService layers.UserLayer) gin.HandlerFunc {
+func AuthMiddleware(userService services.UserLayer) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		auth := c.Request.Header.Get("Authorization")
 		if len(auth) <= 7 {
@@ -42,10 +47,6 @@ func AuthMiddleware(userService layers.UserLayer) gin.HandlerFunc {
 		user, err := getUserFromToken(token, userService)
 		if err != nil {
 			c.AbortWithStatusJSON(401, gin.H{"error": err.Error()})
-			return
-		}
-		if user == nil {
-			c.AbortWithStatusJSON(500, gin.H{"error": "User not found"})
 			return
 		}
 		c.Set("user", *user)

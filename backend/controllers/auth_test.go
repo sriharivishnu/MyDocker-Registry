@@ -13,7 +13,7 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/go-sql-driver/mysql"
 	utils "github.com/sriharivishnu/shopify-challenge/mocks/helpers"
-	mocks "github.com/sriharivishnu/shopify-challenge/mocks/layers"
+	mocks "github.com/sriharivishnu/shopify-challenge/mocks/services"
 	"github.com/sriharivishnu/shopify-challenge/models"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"

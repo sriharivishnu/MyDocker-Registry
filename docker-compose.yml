@@ -17,9 +17,9 @@ services:
       - DATABASE_PORT=3306
       - DATABASE_USER=root
       - DATABASE_PASSWORD=password
-      - S3_BUCKET_KEY=<put-s3-bucket-key>
-      - AWS_ACCESS_KEY_ID=<put-access-key-id-here>
-      - AWS_SECRET_ACCESS_KEY=<put-secret-key-here>
+      - S3_BUCKET_KEY=srihari-shopify-challenge
+      - AWS_ACCESS_KEY_ID=<PUT ACCESS KEY ID HERE>
+      - AWS_SECRET_ACCESS_KEY=<PUT SECRET ACCESS KEY HERE>
       - AWS_DEFAULT_REGION=us-east-1
       - JWT_SECRET=random_secret
 

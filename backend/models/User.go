@@ -3,6 +3,8 @@ package models
 import (
 	"fmt"
 	"time"
+
+	"github.com/sriharivishnu/shopify-challenge/utils"
 )
 
 type User struct {
@@ -19,6 +21,10 @@ func (user User) Validate() error {
 
 	if len(user.Password) < 6 {
 		return fmt.Errorf("password must be at least 6 characters in length")
+	}
+
+	if !utils.IsValidName(user.Username) {
+		return fmt.Errorf("username contains invalid characters. Please only use letters, numbers, and/or -,_")
 	}
 
 	return nil

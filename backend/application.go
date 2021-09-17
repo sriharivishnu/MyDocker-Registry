@@ -6,8 +6,8 @@ import (
 	"os"
 
 	config "github.com/sriharivishnu/shopify-challenge/config"
+	db "github.com/sriharivishnu/shopify-challenge/external"
 	"github.com/sriharivishnu/shopify-challenge/server"
-	db "github.com/sriharivishnu/shopify-challenge/services"
 
 	"github.com/joho/godotenv"
 )

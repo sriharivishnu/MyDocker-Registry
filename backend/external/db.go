@@ -1,8 +1,9 @@
-package services
+package external
 
 import (
 	"fmt"
 	"log"
+	"time"
 
 	_ "github.com/go-sql-driver/mysql"
 	"github.com/jmoiron/sqlx"
@@ -66,7 +67,19 @@ func Init() {
 	port := config.Config.DATABASE_PORT
 	user := config.Config.DATABASE_USER
 	pass := config.Config.DATABASE_PASSWORD
-	DbConn = sqlx.MustConnect("mysql", fmt.Sprintf("%s:%s@(%s:%s)/?parseTime=true", user, pass, host, port))
+	var err error
+	DbConn, err = sqlx.Connect("mysql", fmt.Sprintf("%s:%s@(%s:%s)/?parseTime=true", user, pass, host, port))
+
+	retryCount := 10
+	for err != nil && retryCount >= 0 {
+		log.Printf("Attempted to connect to database and failed: %v retryCount: %d", err, retryCount)
+		retryCount--
+		time.Sleep(time.Duration(11-retryCount) * time.Second)
+		DbConn, err = sqlx.Connect("mysql", fmt.Sprintf("%s:%s@(%s:%s)/?parseTime=true", user, pass, host, port))
+	}
+	if err != nil {
+		panic("Could not connect to database!")
+	}
 	log.Println("Connected to DB host")
 	log.Println("Verifying schema...")
 	createSchema()

@@ -1,8 +1,8 @@
-package layers
+package services
 
 import (
+	db "github.com/sriharivishnu/shopify-challenge/external"
 	"github.com/sriharivishnu/shopify-challenge/models"
-	db "github.com/sriharivishnu/shopify-challenge/services"
 )
 
 type ImageLayer interface {

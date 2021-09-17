@@ -18,6 +18,7 @@ def getConfig(key=None) -> dict:
         with open(CONFIG_FILE, "r") as f:
             contents = json.loads(f.read())
     except FileNotFoundError:
+        click.echo("Config file not found. Creating new one...")
         contents = {"token": Defaults.TOKEN, "api_url": Defaults.API_URL}
         with open(CONFIG_FILE, "w") as f:
             f.write(json.dumps(contents))

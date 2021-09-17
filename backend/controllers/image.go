@@ -1,20 +1,21 @@
 package controllers
 
 import (
+	"fmt"
 	"net/http"
 	"strings"
 
 	"github.com/gin-gonic/gin"
-	"github.com/sriharivishnu/shopify-challenge/layers"
+	"github.com/sriharivishnu/shopify-challenge/external"
 	"github.com/sriharivishnu/shopify-challenge/models"
 	"github.com/sriharivishnu/shopify-challenge/services"
 	"github.com/sriharivishnu/shopify-challenge/utils"
 )
 
 type ImageController struct {
-	RepositoryService layers.RepositoryLayer
-	ImageService      layers.ImageLayer
-	StorageService    services.Storage
+	RepositoryService services.RepositoryLayer
+	ImageService      services.ImageLayer
+	StorageService    external.Storage
 }
 
 func (i *ImageController) PushImage(c *gin.Context) {
@@ -64,7 +65,8 @@ func (i *ImageController) PushImage(c *gin.Context) {
 		return
 	}
 
-	c.JSON(200, gin.H{"message": "Created image successfully", "id": imageTag.Id, "upload_url": URL})
+	message := fmt.Sprintf("Created image %s/%s:%s successfully", user.Username, repo.Name, payload.ImageTag)
+	c.JSON(200, gin.H{"message": message, "id": imageTag.Id, "upload_url": URL})
 }
 
 func (i *ImageController) PullImage(c *gin.Context) {

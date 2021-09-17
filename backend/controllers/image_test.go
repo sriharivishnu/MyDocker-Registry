@@ -12,9 +12,9 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/go-sql-driver/mysql"
+	externalMocks "github.com/sriharivishnu/shopify-challenge/mocks/external"
 	utils "github.com/sriharivishnu/shopify-challenge/mocks/helpers"
-	mocks "github.com/sriharivishnu/shopify-challenge/mocks/layers"
-	serviceMocks "github.com/sriharivishnu/shopify-challenge/mocks/services"
+	mocks "github.com/sriharivishnu/shopify-challenge/mocks/services"
 	"github.com/sriharivishnu/shopify-challenge/models"
 	"github.com/stretchr/testify/assert"
 )
@@ -71,7 +71,7 @@ func TestImagePushSuccess(t *testing.T) {
 			fileKey := fmt.Sprintf("username/repoName/%s.tar.gz", test.expectedTag)
 			mockImageService.On("Create", "456", test.expectedTag, "sample description", fileKey).Return(dummyImageTag, nil)
 
-			mockStorageService := serviceMocks.Storage{}
+			mockStorageService := externalMocks.Storage{}
 			mockStorageService.On("GetUploadURL", dummyUser.Username, "456", test.expectedTag).Return("http://url.com", nil)
 
 			imageController := ImageController{
@@ -83,7 +83,7 @@ func TestImagePushSuccess(t *testing.T) {
 			imageController.PushImage(ctx)
 
 			expected, _ := json.Marshal(gin.H{
-				"message":    "Created image successfully",
+				"message":    fmt.Sprintf("Created image username/repoName:%s successfully", test.expectedTag),
 				"upload_url": "http://url.com",
 				"id":         dummyImageTag.Id,
 			})
@@ -146,7 +146,7 @@ func TestImagePushError(t *testing.T) {
 			mockImageService := mocks.ImageLayer{}
 			mockImageService.On("Create", "456", "srihari", "sample description", "username/repoName/srihari.tar.gz").Return(models.ImageTag{Id: "test"}, test.createError)
 
-			mockStorageService := serviceMocks.Storage{}
+			mockStorageService := externalMocks.Storage{}
 			mockStorageService.On("GetUploadURL", dummyUser.Username, "456", "srihari").Return("http://url.com", test.getUploadError)
 
 			imageController := ImageController{
@@ -204,7 +204,7 @@ func TestImagePullSuccess(t *testing.T) {
 		mockImageService := mocks.ImageLayer{}
 		mockImageService.On("GetImageTagByRepoAndTag", "456", "srihari").Return(dummyImageTag, nil)
 
-		mockStorageService := serviceMocks.Storage{}
+		mockStorageService := externalMocks.Storage{}
 		mockStorageService.On("GetDownloadURL", "test/file/key.tar.gz").Return("http://url.com", nil)
 
 		imageController := ImageController{
@@ -281,7 +281,7 @@ func TestImagePullError(t *testing.T) {
 			mockImageService := mocks.ImageLayer{}
 			mockImageService.On("GetImageTagByRepoAndTag", "456", "srihari").Return(dummyImageTag, test.getImageError)
 
-			mockStorageService := serviceMocks.Storage{}
+			mockStorageService := externalMocks.Storage{}
 			mockStorageService.On("GetDownloadURL", "test/file/key.tar.gz").Return("http://url.com", test.getURLError)
 
 			imageController := ImageController{

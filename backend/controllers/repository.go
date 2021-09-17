@@ -1,17 +1,18 @@
 package controllers
 
 import (
+	"fmt"
 	"net/http"
 	"strconv"
 
 	"github.com/gin-gonic/gin"
-	"github.com/sriharivishnu/shopify-challenge/layers"
 	"github.com/sriharivishnu/shopify-challenge/models"
+	"github.com/sriharivishnu/shopify-challenge/services"
 	"github.com/sriharivishnu/shopify-challenge/utils"
 )
 
 type RepositoryController struct {
-	RepositoryService layers.RepositoryLayer
+	RepositoryService services.RepositoryLayer
 }
 
 func (r *RepositoryController) Create(c *gin.Context) {
@@ -37,8 +38,8 @@ func (r *RepositoryController) Create(c *gin.Context) {
 		return
 	}
 
-	c.JSON(200, &repo)
-
+	message := fmt.Sprintf("Created repository %s/%s successfully", user.Username, repo.Name)
+	c.JSON(200, gin.H{"message": message, "id": repo.Id})
 }
 
 func (r *RepositoryController) GetForUser(c *gin.Context) {

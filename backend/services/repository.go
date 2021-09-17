@@ -1,9 +1,9 @@
-package layers
+package services
 
 import (
 	"github.com/pkg/errors"
+	db "github.com/sriharivishnu/shopify-challenge/external"
 	"github.com/sriharivishnu/shopify-challenge/models"
-	db "github.com/sriharivishnu/shopify-challenge/services"
 )
 
 type RepositoryLayer interface {
@@ -59,7 +59,7 @@ func (service *RepositoryService) Search(query string, limit int, offset int) ([
 				left join (
 					select count(*) as num_tags, repository_id from image_tag group by repository_id
 				) as counts on counts.repository_id = r.id
-				where MATCH(r.name) AGAINST(? IN BOOLEAN MODE) limit ? offset ?;`
+				where MATCH(r.name) AGAINST(?) limit ? offset ?;`
 	query = "*" + query + "*"
 	err := db.DbConn.Select(&repos, sql, query, limit, offset)
 	return repos, err
