@@ -1,4 +1,5 @@
 # Shopify Challenge Submission
+This repository was made for the challenge detailed [here](https://docs.google.com/document/d/1eg3sJTOwtyFhDopKedRD6142CFkDfWp1QvRKXNTPIOc/edit)
 
 When I first saw that the challenge was to create an image repository, I immediately thought of a Docker image repository instead of a *photo* image repository :) So, I thought it would be a fun and interesting challenge if I could create a simpler version of DockerHub, a place where users can store their **Docker** images! My Challenge submission is a backend service which supports authentication, pushing / pulling docker images, and searching image repositories of all users.
 
@@ -16,6 +17,7 @@ When I first saw that the challenge was to create an image repository, I immedia
 1. To install the CLI, `python3 -m pip install ./cli`
 2. Run `mydocker --help` to verify the installation and see a full list of available commands
 3. For example, run `mydocker signup` to sign up to be able to push images!
+
 
 ```
 Usage: mydocker [OPTIONS] COMMAND [ARGS]...
@@ -88,7 +90,7 @@ There are three subdirectories in this repository
 Run `go test -v ./... ` in the backend directory
 
 ## Cleaning Up
-`docker-compose down` to clean up all images and networks
+`docker-compose down --rmi all` to clean up all images and networks
 `python3 -m pip uninstall mydocker` to uninstall the CLI
 
 ## Deploying
@@ -104,6 +106,7 @@ Feel free to modify the variables in the terraform.tfvars to your application ne
 4. Run `cd ../backend && git archive -o eb.zip` to quickly create a zip of the backend directory
 5. Log into the AWS CLI and upload the zip to Elastic Beanstalk
 
+To destroy the resources, run `terraform destroy`
 
 ## My Journey
 
@@ -114,7 +117,7 @@ So I decided to simplify my approach: Use a custom CLI that can take an image sp
 
 Another aspect that I learned a lot about was using Terraform to represent my infrastructure as code. It was such a great experience and I found it much more to my liking then doing everything through the AWS console interface.
 
-## Future Optimizations
+## Future Features
 
 With more time, here are some cool ideas I would love to integrate with this project!
 
