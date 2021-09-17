@@ -48,13 +48,11 @@ func (s *S3) GetUploadURL(username string, repository string, tag string) (strin
 	// Create an Amazon S3 service client
 	client := s3.NewFromConfig(cfg)
 	file_key := utils.CreateFileKey(username, repository, tag)
-	// expiresAt := time.Now().Add(1 * time.Hour)
 	log.Println(file_key)
 
 	input := &s3.PutObjectInput{
 		Bucket: &localConfig.Config.S3_BUCKET_KEY,
 		Key:    &file_key,
-		// Expires: &expiresAt,
 	}
 	psClient := s3.NewPresignClient(client)
 	resp, err := PutPresignedURL(context.TODO(), psClient, input)

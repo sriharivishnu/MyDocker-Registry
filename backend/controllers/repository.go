@@ -63,8 +63,7 @@ func (r *RepositoryController) Search(c *gin.Context) {
 	offsetStr := params.Get("offset")
 	offset, offsetErr := strconv.Atoi(offsetStr)
 	if offsetErr != nil {
-		utils.RespondErrorString(c, "Offset must be a number", 400)
-		return
+		offset = 0
 	}
 	repos, err := r.RepositoryService.Search(query, 10, offset)
 	if err != nil {

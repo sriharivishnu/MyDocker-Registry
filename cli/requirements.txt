@@ -2,3 +2,5 @@ click==8.0.1
 docker==5.0.0
 prettytable==2.2.0
 tqdm==4.62.2
+PyJWT==1.7.1
+six==1.16.0

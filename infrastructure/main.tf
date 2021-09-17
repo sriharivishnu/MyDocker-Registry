@@ -156,6 +156,11 @@ resource "aws_elastic_beanstalk_environment" "serverEnvironment" {
     }
     setting {
       namespace = "aws:elasticbeanstalk:application:environment"
+      name      = "AWS_DEFAULT_REGION"
+      value     = var.aws_region
+    }
+    setting {
+      namespace = "aws:elasticbeanstalk:application:environment"
       name      = "JWT_SECRET"
       value     = random_string.jwt_password.result
     }

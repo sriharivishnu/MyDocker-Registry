@@ -78,15 +78,15 @@ func (_m *RepositoryLayer) GetRepositoryByName(username string, reponame string)
 }
 
 // Search provides a mock function with given fields: query, limit, offset
-func (_m *RepositoryLayer) Search(query string, limit int, offset int) ([]models.Repository, error) {
+func (_m *RepositoryLayer) Search(query string, limit int, offset int) ([]models.SearchResult, error) {
 	ret := _m.Called(query, limit, offset)
 
-	var r0 []models.Repository
-	if rf, ok := ret.Get(0).(func(string, int, int) []models.Repository); ok {
+	var r0 []models.SearchResult
+	if rf, ok := ret.Get(0).(func(string, int, int) []models.SearchResult); ok {
 		r0 = rf(query, limit, offset)
 	} else {
 		if ret.Get(0) != nil {
-			r0 = ret.Get(0).([]models.Repository)
+			r0 = ret.Get(0).([]models.SearchResult)
 		}
 	}
 

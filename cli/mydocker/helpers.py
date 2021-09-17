@@ -7,9 +7,9 @@ import shutil
 import os
 
 try:
-    from .config import CONFIG_FILE, API_URL
+    from .config import getConfig, saveConfig
 except ImportError:
-    from config import CONFIG_FILE, API_URL
+    from config import getConfig, saveConfig
 
 
 class Token:
@@ -17,24 +17,17 @@ class Token:
         self._cached_token = None
 
     def readAndSaveToken(self, token: str) -> None:
-        try:
-            with open(CONFIG_FILE, "r") as f:
-                contents = json.loads(f.read())
-        except Exception:
-            contents = {}
-        contents[API_URL] = token
-
-        with open(CONFIG_FILE, "w") as f:
-            f.write(json.dumps(contents))
+        saveConfig({"token": token})
 
     @property
     def token(self) -> str:
         if self._cached_token is not None:
             return self._cached_token
+
         try:
-            with open(CONFIG_FILE, "r") as f:
-                contents = json.loads(f.read())
-                creds = contents[API_URL]
+            creds = getConfig(key="token")
+            if creds is None:
+                raise Exception("invalid token")
         except Exception:
             raise click.UsageError(
                 "Could not find login credentials. Please obtain credentials with the signup or login commands"
@@ -44,7 +37,7 @@ class Token:
 
     @property
     def user(self) -> dict:
-        return jwt.decode(self.token)
+        return jwt.decode(self.token, options={"verify_signature": False})
 
 
 def _readResponse(resp):
@@ -68,7 +61,9 @@ def doPost(endpoint: str, payload: dict, token: Token = None) -> dict:
         headers = {}
 
     try:
-        resp = requests.post(url=API_URL + endpoint, json=payload, headers=headers)
+        resp = requests.post(
+            url=getConfig("api_url") + endpoint, json=payload, headers=headers
+        )
         json_response = _readResponse(resp)
     except Exception as e:
         raise click.ClickException(str(e))
@@ -81,7 +76,7 @@ def doGet(endpoint: str, token: Token = None) -> dict:
     else:
         headers = {}
     try:
-        resp = requests.get(url=API_URL + endpoint, headers=headers)
+        resp = requests.get(url=getConfig("api_url") + endpoint, headers=headers)
         json_response = _readResponse(resp)
     except Exception as e:
         raise click.ClickException(str(e))

@@ -10,7 +10,7 @@ type RepositoryLayer interface {
 	Create(name, description, ownerId string) (models.Repository, error)
 	GetRepositoryByName(username string, reponame string) (models.Repository, error)
 	GetRepositoriesForUser(ownerId string) ([]models.Repository, error)
-	Search(query string, limit int, offset int) ([]models.Repository, error)
+	Search(query string, limit int, offset int) ([]models.SearchResult, error)
 }
 
 type RepositoryService struct{}
@@ -45,11 +45,21 @@ func (service *RepositoryService) GetRepositoriesForUser(ownerId string) ([]mode
 	return repos, err
 }
 
-func (service *RepositoryService) Search(query string, limit int, offset int) ([]models.Repository, error) {
-	repos := []models.Repository{}
-	sql := `select r.* from repository r
-		inner join user u on r.owner_id = u.id
-		where MATCH(r.name) AGAINST(? IN BOOLEAN MODE) limit ? offset ?`
+func (service *RepositoryService) Search(query string, limit int, offset int) ([]models.SearchResult, error) {
+	repos := []models.SearchResult{}
+	sql := `
+		select 	r.id as id,
+				r.name as name,
+				r.description as description,
+				u.username as username,
+				r.created_at as created_at,
+				COALESCE(counts.num_tags, 0) as num_tags
+		from repository r
+				inner join user u on r.owner_id = u.id
+				left join (
+					select count(*) as num_tags, repository_id from image_tag group by repository_id
+				) as counts on counts.repository_id = r.id
+				where MATCH(r.name) AGAINST(? IN BOOLEAN MODE) limit ? offset ?;`
 	query = "*" + query + "*"
 	err := db.DbConn.Select(&repos, sql, query, limit, offset)
 	return repos, err

@@ -8,15 +8,20 @@ from prettytable import PrettyTable
 
 try:
     from .helpers import doPost, doGet, Image, Token, zip_tar
+    from .config import saveConfig
 except ImportError:
     from helpers import doPost, doGet, Image, Token, zip_tar
+    from config import saveConfig
 
 
 @click.group()
-def main():
+@click.option("--host", required=False, default=None, help="Set the API URL to connect to")
+def main(host):
     """
     CLI application that provides methods for testing the custom docker repository
     """
+    if host:
+        saveConfig({host: host})
     pass
 
 
@@ -73,12 +78,16 @@ def push(image, description):
     tar_file_name += ".gz"
 
     token = Token()
-    create_image_response = doPost(
-        f"/users/{imageDetails.user}/repositories/{imageDetails.repository}/images",
-        payload={"tag": imageDetails.tag, "description": description},
-        token=token,
-    )
-    upload_url = create_image_response["upload_url"]
+    try:
+        create_image_response = doPost(
+            f"/users/{imageDetails.user}/repositories/{imageDetails.repository}/images",
+            payload={"tag": imageDetails.tag, "description": description},
+            token=token,
+        )
+        upload_url = create_image_response["upload_url"]
+    except click.ClickException as e:
+        os.remove(tar_file_name)
+        raise e
 
     click.echo("Uploading to repository...")
     with open(tar_file_name, "rb") as tar_file:
@@ -147,20 +156,22 @@ def pull(image):
 @click.argument("repository")
 @click.option("--description", required=False, default="")
 def create(repository, description):
-    """Creates a repository. Please give repository in the format <username>/<repository>"""
-    repo = Image(repository).parse()
+    """Creates a repository"""
+    token = Token()
     doPost(
-        f"/users/{repo.user}/repositories",
-        {"name": repo.repository, "description": description},
+        f"""/users/{token.user["username"]}/repositories""",
+        {"name": repository, "description": description},
         token=Token(),
     )
-    click.echo("Successfully created repository: %s" % repo.name)
+    click.echo("Successfully created repository: %s" % repository)
 
 
 @main.command()
-@click.argument("user")
+@click.argument("user", required=False)
 def repositories(user):
-    """Retrieves the repositories for a given user"""
+    """Retrieves the repositories for a given user. Defaults to logged in user if present"""
+    if not user:
+        user = Token().user["username"]
     response = doGet(f"/users/{user}/repositories")
     repositories = response["repositories"]
     table = PrettyTable()
@@ -194,11 +205,20 @@ def images(user, repository):
 def search(query, offset):
     """Retrieves the images for a given repository"""
     response = doGet(f"/repositories/search?query={query}&offset={offset}")
+    print (response)
     repositories = response["results"]
     table = PrettyTable()
-    table.field_names = ["Name", "Description", "Created"]
+    table.field_names = ["User", "Repository", "Description", "# of Images", "Created"]
     for x in repositories:
-        table.add_row([x.get("name"), x.get("description"), x.get("created_at")])
+        table.add_row(
+            [
+                x.get("username"),
+                x.get("repo_name"),
+                x.get("description"),
+                x.get("num_tags"),
+                x.get("created_at"),
+            ]
+        )
 
     print(table)
 

@@ -8,11 +8,6 @@ import (
 	"github.com/go-sql-driver/mysql"
 )
 
-func CheckSQLError(err error) bool {
-	err, ok := err.(*mysql.MySQLError)
-	return ok
-}
-
 func RespondSQLError(c *gin.Context, err error) {
 	log.Printf("\x1b[31;1m%s\x1b[0m\n", err)
 	sqlErr, ok := err.(*mysql.MySQLError)

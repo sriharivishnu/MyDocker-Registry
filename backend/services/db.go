@@ -50,6 +50,10 @@ create table if not exists image_tag (
 var DbConn *sqlx.DB
 
 func createSchema() {
+	log.Println("Creating Database...")
+	DbConn.MustExec(fmt.Sprintf("create database if not exists %s;", config.Config.DATABASE_NAME))
+	log.Println("Created Database")
+	DbConn.MustExec(fmt.Sprintf("use %s;", config.Config.DATABASE_NAME))
 	log.Println("Creating Schema...")
 	DbConn.MustExec(userTable)
 	DbConn.MustExec(repositoryTable)
@@ -60,11 +64,10 @@ func createSchema() {
 func Init() {
 	host := config.Config.DATABASE_HOST
 	port := config.Config.DATABASE_PORT
-	database := config.Config.DATABASE_NAME
 	user := config.Config.DATABASE_USER
 	pass := config.Config.DATABASE_PASSWORD
-	DbConn = sqlx.MustConnect("mysql", fmt.Sprintf("%s:%s@(%s:%s)/%s?parseTime=true", user, pass, host, port, database))
-	log.Println("Connected to DB")
+	DbConn = sqlx.MustConnect("mysql", fmt.Sprintf("%s:%s@(%s:%s)/?parseTime=true", user, pass, host, port))
+	log.Println("Connected to DB host")
 	log.Println("Verifying schema...")
 	createSchema()
 	log.Println("Database is connected and ready!")
