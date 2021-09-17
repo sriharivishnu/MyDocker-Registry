@@ -6,9 +6,13 @@ When I first saw that the challenge was to create an image repository, I immedia
 
 ## Prerequisites
 
+**Trying out the Application**
 - Docker installed on your system
 - Python3 
+
+**For Local development**
 - S3 bucket name + AWS access key + AWS secret access key (to run locally)
+- docker-compose (if on Linux; O)
 - Terraform (to deploy)
 - Go (to run tests)
 
@@ -59,7 +63,7 @@ Let's tag this image with `docker tag ubuntu:latest <your-username>/test-ubuntu:
 
 Now let's push this image to our custom image repository!
 
-**Pushing the Image**
+**Pushing an Image**
 1. Create the repository under your account with `mydocker create test-ubuntu`
 2. Then, run `mydocker push <your-username>/test-ubuntu:v1`
 3. That's it! You have successfully pushed an image to the repository. Let's delete the local images we created with `docker rmi ubuntu:latest && docker rmi <your-username>/test-ubuntu:v1`. When running `docker images`, note that there is no ubuntu image
@@ -90,13 +94,13 @@ There are three subdirectories in this repository
 Run `go test -v ./... ` in the backend directory
 
 ## Cleaning Up
-`docker-compose down --rmi all` to clean up all images and networks
-`python3 -m pip uninstall mydocker` to uninstall the CLI
+1. `docker-compose down --rmi all` to clean up all images and networks
+2. `python3 -m pip uninstall mydocker` to uninstall the CLI
 
 ## Deploying
 To deploy the infrastructure to AWS, I used Terraform which can be installed from [here](https://learn.hashicorp.com/tutorials/terraform/install-cli)
 
-First, configure aws on your machine, or set the environment variable `AWS_ACCESS_KEY_ID` and `AWS_SECRET_ACCESS_KEY` to your access keys. Details on how to obtain the AWS access keys can be found [here](https://docs.aws.amazon.com/powershell/latest/userguide/pstools-appendix-sign-up.html)
+First, configure aws CLI on your machine, or set the environment variable `AWS_ACCESS_KEY_ID` and `AWS_SECRET_ACCESS_KEY` to your access keys. Details on how to obtain the AWS access keys can be found [here](https://docs.aws.amazon.com/powershell/latest/userguide/pstools-appendix-sign-up.html)
 
 Feel free to modify the variables in the terraform.tfvars to your application needs.
 
