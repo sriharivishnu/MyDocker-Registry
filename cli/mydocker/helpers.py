@@ -77,7 +77,6 @@ def doGet(endpoint: str, token: Token = None) -> dict:
         headers = {}
     try:
         resp = requests.get(url=getConfig("api_url") + endpoint, headers=headers)
-        print(getConfig("api_url"))
         json_response = _readResponse(resp)
     except Exception as e:
         raise click.ClickException(str(e))

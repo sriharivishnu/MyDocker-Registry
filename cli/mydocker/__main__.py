@@ -171,7 +171,7 @@ def pull(image):
 
     for image in images:
 
-        print(
+        click.echo(
             "\nSuccessfully pulled image: %s" % image.tags[0]
             if len(image.tags) > 0
             else image.id,
