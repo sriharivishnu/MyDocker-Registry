@@ -8,10 +8,10 @@ from prettytable import PrettyTable
 
 try:
     from .helpers import doPost, doGet, Image, Token, zip_tar
-    from .config import saveConfig, CONFIG_FILE
+    from .config import saveConfig, CONFIG_FILE, Defaults
 except ImportError:
     from helpers import doPost, doGet, Image, Token, zip_tar
-    from config import saveConfig, CONFIG_FILE
+    from config import saveConfig, CONFIG_FILE, Defaults
 
 
 @click.group()
@@ -30,6 +30,12 @@ def main():
     help="Saves a custom API URL to use for requests",
 )
 @click.option(
+    "--local",
+    is_flag=True,
+    required=False,
+    help="Sets the API URL http://localhost:5000",
+)
+@click.option(
     "--reset",
     is_flag=True,
     required=False,
@@ -41,18 +47,20 @@ def main():
     required=False,
     help="Outputs the current logged in user",
 )
-def config(host, reset, curuser):
-    """Set URL, reset settings, or get current user"""
+def config(host, local, reset, curuser):
+    """Set API URL, reset settings, or get current user"""
     if host:
         saveConfig({"api_url": host})
         click.echo("Successfully set new API URL to %s" % host)
+    elif local:
+        saveConfig({"api_url": Defaults.LOCAL_API_URL, "token": None})
+        click.echo("Successfully set new API URL to %s" % Defaults.LOCAL_API_URL)
     elif reset:
         os.remove(CONFIG_FILE)
         click.echo("Successfully reset config to default settings")
     elif curuser:
         token = Token()
         click.echo("Username: %s" % token.user["username"])
-
     else:
         click.echo("No arguments were supplied. Config was not changed")
 

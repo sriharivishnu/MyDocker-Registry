@@ -50,11 +50,13 @@ create table if not exists image_tag (
 
 var DbConn *sqlx.DB
 
-func createSchema() {
+func createDatabase() {
 	log.Println("Creating Database...")
 	DbConn.MustExec(fmt.Sprintf("create database if not exists %s;", config.Config.DATABASE_NAME))
 	log.Println("Created Database")
-	DbConn.MustExec(fmt.Sprintf("use %s;", config.Config.DATABASE_NAME))
+}
+
+func createSchema() {
 	log.Println("Creating Schema...")
 	DbConn.MustExec(userTable)
 	DbConn.MustExec(repositoryTable)
@@ -67,6 +69,7 @@ func Init() {
 	port := config.Config.DATABASE_PORT
 	user := config.Config.DATABASE_USER
 	pass := config.Config.DATABASE_PASSWORD
+	database := config.Config.DATABASE_NAME
 	var err error
 	DbConn, err = sqlx.Connect("mysql", fmt.Sprintf("%s:%s@(%s:%s)/?parseTime=true", user, pass, host, port))
 
@@ -77,6 +80,15 @@ func Init() {
 		time.Sleep(time.Duration(11-retryCount) * time.Second)
 		DbConn, err = sqlx.Connect("mysql", fmt.Sprintf("%s:%s@(%s:%s)/?parseTime=true", user, pass, host, port))
 	}
+	if err != nil {
+		panic("Could not connect to database!")
+	}
+	// Create database if it doesn't exist
+	createDatabase()
+	DbConn.Close()
+
+	// Connect again with connection string to handle disconnections
+	DbConn, err = sqlx.Connect("mysql", fmt.Sprintf("%s:%s@(%s:%s)/%s?parseTime=true", user, pass, host, port, database))
 	if err != nil {
 		panic("Could not connect to database!")
 	}

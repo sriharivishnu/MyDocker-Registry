@@ -87,7 +87,7 @@ There are three subdirectories in this repository
 2. `docker-compose up` will run the server and the database (MariaDB) locally
 
 3. `python3 -m pip install ./cli` will install the CLI onto your machine
-4. Run `mydocker --help` to verify that the CLI was installed successfully
+4. Run `mydocker config --local` to set the CLI into local mode
 
 ## Running Tests (Requires Go)
 

@@ -8,9 +8,10 @@ if not os.path.exists(CONFIG_FILE):
 
 
 class Defaults:
-    API_URL = "http://prod.eba-hmr5wtmk.us-east-1.elasticbeanstalk.com/v1"
-    LOCAL_API_URL = "http://localhost:5000/v1"
+    API_URL = "http://prod.eba-hmr5wtmk.us-east-1.elasticbeanstalk.com"
+    LOCAL_API_URL = "http://localhost:5000"
     TOKEN = None
+    VERSION = "v1"
 
 
 def getConfig(key=None) -> dict:

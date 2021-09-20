@@ -7,9 +7,9 @@ import shutil
 import os
 
 try:
-    from .config import getConfig, saveConfig
+    from .config import getConfig, saveConfig, Defaults
 except ImportError:
-    from config import getConfig, saveConfig
+    from config import getConfig, saveConfig, Defaults
 
 
 class Token:
@@ -62,7 +62,9 @@ def doPost(endpoint: str, payload: dict, token: Token = None) -> dict:
 
     try:
         resp = requests.post(
-            url=getConfig("api_url") + endpoint, json=payload, headers=headers
+            url=getConfig("api_url") + "/" + Defaults.VERSION + endpoint,
+            json=payload,
+            headers=headers,
         )
         json_response = _readResponse(resp)
     except Exception as e:
@@ -76,7 +78,10 @@ def doGet(endpoint: str, token: Token = None) -> dict:
     else:
         headers = {}
     try:
-        resp = requests.get(url=getConfig("api_url") + endpoint, headers=headers)
+        resp = requests.get(
+            url=getConfig("api_url") + "/" + Defaults.VERSION + endpoint,
+            headers=headers,
+        )
         json_response = _readResponse(resp)
     except Exception as e:
         raise click.ClickException(str(e))
