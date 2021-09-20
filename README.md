@@ -15,7 +15,7 @@ Check out the Demo below!
 
 **For Local development**
 - S3 bucket name + AWS access key + AWS secret access key (to run locally)
-- docker-compose (if on Linux; O)
+- docker-compose
 - Terraform (to deploy)
 - Go (to run tests)
 
