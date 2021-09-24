@@ -4,7 +4,7 @@ This repository was originally made for the challenge detailed [here](https://do
 When I first saw that the challenge was to create an image repository, I immediately thought of a Docker image repository instead of a *photo* image repository :) So, I thought it would be a fun and interesting challenge if I could create a simpler version of DockerHub, a place where users can store their **Docker** images! My Challenge submission is a backend service which supports authentication, pushing / pulling docker images, and searching image repositories of all users.
 
 Check out the Demo below!
-
+ 
 [Demo](https://youtu.be/AfQ6J68ulXk)
 
 ## Prerequisites
