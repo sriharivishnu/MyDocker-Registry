@@ -71,7 +71,7 @@ func Init() {
 	pass := config.Config.DATABASE_PASSWORD
 	database := config.Config.DATABASE_NAME
 	var err error
-	DbConn, err = sqlx.Connect("mysql", fmt.Sprintf("%s:%s@(%s:%s)/?parseTime=true", user, pass, host, port))
+	DbConn, err = sqlx.Connect("mysql", fmt.Sprintf("%s:%s@(%s:%s)/%s?parseTime=true", user, pass, host, port, database))
 
 	retryCount := 10
 	for err != nil && retryCount >= 0 {
