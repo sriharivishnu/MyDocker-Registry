@@ -1,10 +1,10 @@
-# Shopify Challenge Submission
-This repository was made for the challenge detailed [here](https://docs.google.com/document/d/1eg3sJTOwtyFhDopKedRD6142CFkDfWp1QvRKXNTPIOc/edit)
+# MyDocker Registry - A Custom Docker Image Registry
+This repository was originally made for the challenge detailed [here](https://docs.google.com/document/d/1eg3sJTOwtyFhDopKedRD6142CFkDfWp1QvRKXNTPIOc/edit)
 
 When I first saw that the challenge was to create an image repository, I immediately thought of a Docker image repository instead of a *photo* image repository :) So, I thought it would be a fun and interesting challenge if I could create a simpler version of DockerHub, a place where users can store their **Docker** images! My Challenge submission is a backend service which supports authentication, pushing / pulling docker images, and searching image repositories of all users.
 
 Check out the Demo below!
-
+ 
 [Demo](https://youtu.be/AfQ6J68ulXk)
 
 ## Prerequisites
@@ -15,7 +15,7 @@ Check out the Demo below!
 
 **For Local development**
 - S3 bucket name + AWS access key + AWS secret access key (to run locally)
-- docker-compose (if on Linux; O)
+- docker-compose (Should come with Docker on Mac + Windows)
 - Terraform (to deploy)
 - Go (to run tests)
 
@@ -56,7 +56,7 @@ After installation, run `mydocker signup` to sign up. A config file will be crea
 WARNING: If connecting to production server, please do not use a sensitive password: https has not been configured yet for the deployed server.
 ```
 
-Let's first grab a test image from the real DockerHub since the one I built does not have all the images just yet :)
+Let's first grab a test image from the real Docker Hub since the one I built does not have all the images just yet :)
 
 `docker pull ubuntu:latest`
 
