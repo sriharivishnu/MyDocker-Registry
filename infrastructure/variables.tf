@@ -23,7 +23,7 @@ variable "eb_env_name" {
 }
 
 variable "eb_solution_stack_name" {
-    default = "64bit Amazon Linux 2 v3.4.0 running Go 1"
+    default = "64bit Amazon Linux 2 v3.4.1 running Go 1"
 }
 
 variable "eb_instance_port" {
