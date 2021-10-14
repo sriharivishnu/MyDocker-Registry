@@ -30,19 +30,19 @@ func SetUpV1(router *gin.Engine) {
 	auth.POST("/login", authController.SignIn)
 
 	users := v1.Group("users")
-	repositories := users.Group("/:user_id/repositories")
-	images := repositories.Group("/:repo_id/images")
+	repositories := users.Group("/:username/repositories")
+	images := repositories.Group("/:repo_name/images")
 
 	// /repositories
 	v1.GET("/repositories/search", repoController.Search)
 
 	// /users/:id/repositories
 	repositories.GET("", repoController.GetForUser)
-	repositories.GET("/:repo_id", repoController.GetForUser)
+	// repositories.GET("/:repo_id", repoController.GetForUser)
 
 	// /users/:id/repositories/:id/images
 	images.GET("", imageTagController.GetImageTagsForRepoName)
-	images.GET("/:image_id", imageTagController.PullImage)
+	images.GET("/:image_tag", imageTagController.PullImage)
 
 	// endpoints that require auth
 	repositories.Use(middlewares.AuthMiddleware(&services.UserService{}))

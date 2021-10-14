@@ -43,9 +43,9 @@ func (r *RepositoryController) Create(c *gin.Context) {
 }
 
 func (r *RepositoryController) GetForUser(c *gin.Context) {
-	user_id, _ := c.Params.Get("user_id")
+	username, _ := c.Params.Get("username")
 
-	repos, err := r.RepositoryService.GetRepositoriesForUser(user_id)
+	repos, err := r.RepositoryService.GetRepositoriesForUser(username)
 	if err != nil {
 		utils.RespondSQLError(c, err)
 		return

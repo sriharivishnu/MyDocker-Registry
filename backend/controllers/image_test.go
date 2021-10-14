@@ -36,11 +36,11 @@ func TestImagePushSuccess(t *testing.T) {
 	gin.SetMode(gin.TestMode)
 	params := []gin.Param{
 		{
-			Key:   "user_id",
+			Key:   "username",
 			Value: "username",
 		},
 		{
-			Key:   "repo_id",
+			Key:   "repo_name",
 			Value: "456",
 		},
 	}
@@ -119,11 +119,11 @@ func TestImagePushError(t *testing.T) {
 	gin.SetMode(gin.TestMode)
 	params := []gin.Param{
 		{
-			Key:   "user_id",
+			Key:   "username",
 			Value: "username",
 		},
 		{
-			Key:   "repo_id",
+			Key:   "repo_name",
 			Value: "456",
 		},
 	}
@@ -174,15 +174,15 @@ func TestImagePullSuccess(t *testing.T) {
 
 	params := []gin.Param{
 		{
-			Key:   "user_id",
+			Key:   "username",
 			Value: "123",
 		},
 		{
-			Key:   "repo_id",
+			Key:   "repo_name",
 			Value: "456",
 		},
 		{
-			Key:   "image_id",
+			Key:   "image_tag",
 			Value: "srihari",
 		},
 	}
@@ -249,15 +249,15 @@ func TestImagePullError(t *testing.T) {
 
 	params := []gin.Param{
 		{
-			Key:   "user_id",
+			Key:   "username",
 			Value: "123",
 		},
 		{
-			Key:   "repo_id",
+			Key:   "repo_name",
 			Value: "456",
 		},
 		{
-			Key:   "image_id",
+			Key:   "image_tag",
 			Value: "srihari",
 		},
 	}

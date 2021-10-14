@@ -21,7 +21,7 @@ func TestRepositoryCreateSuccess(t *testing.T) {
 	gin.SetMode(gin.TestMode)
 	params := []gin.Param{
 		{
-			Key:   "user_id",
+			Key:   "username",
 			Value: "username",
 		},
 	}
@@ -79,7 +79,7 @@ func TestRepositoryCreateError(t *testing.T) {
 	gin.SetMode(gin.TestMode)
 	params := []gin.Param{
 		{
-			Key:   "user_id",
+			Key:   "username",
 			Value: "username",
 		},
 	}
@@ -138,7 +138,7 @@ func TestRepositoryGetForUser(t *testing.T) {
 	gin.SetMode(gin.TestMode)
 	params := []gin.Param{
 		{
-			Key:   "user_id",
+			Key:   "username",
 			Value: "username",
 		},
 	}

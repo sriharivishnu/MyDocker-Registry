@@ -20,8 +20,8 @@ type ImageController struct {
 
 func (i *ImageController) PushImage(c *gin.Context) {
 	// Input validation
-	username, _ := c.Params.Get("user_id")
-	repoName, _ := c.Params.Get("repo_id")
+	username, _ := c.Params.Get("username")
+	repoName, _ := c.Params.Get("repo_name")
 	var payload struct {
 		ImageTag    string `json:"tag"`
 		Description string `json:"description,omitempty"`
@@ -71,11 +71,11 @@ func (i *ImageController) PushImage(c *gin.Context) {
 
 func (i *ImageController) PullImage(c *gin.Context) {
 	// input parameters
-	username, _ := c.Params.Get("user_id")
-	repoName, _ := c.Params.Get("repo_id")
-	imageName, _ := c.Params.Get("image_id")
-	if strings.TrimSpace(imageName) == "" {
-		imageName = "latest"
+	username, _ := c.Params.Get("username")
+	repoName, _ := c.Params.Get("repo_name")
+	imageTagString, _ := c.Params.Get("image_tag")
+	if strings.TrimSpace(imageTagString) == "" {
+		imageTagString = "latest"
 	}
 
 	// Fetch repository
@@ -86,9 +86,9 @@ func (i *ImageController) PullImage(c *gin.Context) {
 	}
 
 	// Get image from repository
-	imageTag, errGetTag := i.ImageService.GetImageTagByRepoAndTag(repo.Id, imageName)
+	imageTag, errGetTag := i.ImageService.GetImageTagByRepoAndTag(repo.Id, imageTagString)
 	if errGetTag != nil {
-		utils.RespondErrorString(c, "Could not find: "+username+"/"+repoName+":"+imageName, http.StatusNotFound)
+		utils.RespondErrorString(c, "Could not find: "+username+"/"+repoName+":"+imageTagString, http.StatusNotFound)
 		return
 	}
 
@@ -104,8 +104,8 @@ func (i *ImageController) PullImage(c *gin.Context) {
 }
 
 func (i *ImageController) GetImageTagsForRepoName(c *gin.Context) {
-	username, _ := c.Params.Get("user_id")
-	repoName, _ := c.Params.Get("repo_id")
+	username, _ := c.Params.Get("username")
+	repoName, _ := c.Params.Get("repo_name")
 
 	repo, errGetRepo := i.RepositoryService.GetRepositoryByName(username, repoName)
 	if errGetRepo != nil {
