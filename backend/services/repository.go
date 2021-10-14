@@ -1,7 +1,6 @@
 package services
 
 import (
-	"github.com/pkg/errors"
 	db "github.com/sriharivishnu/shopify-challenge/external"
 	"github.com/sriharivishnu/shopify-challenge/models"
 )
@@ -21,7 +20,7 @@ func (service *RepositoryService) Create(name, description, ownerId string) (mod
 	err := tx.Get(&repo, "INSERT INTO repository (name, description, owner_id) VALUES (?, ?, ?) returning *;", name, description, ownerId)
 	if err != nil {
 		tx.Rollback()
-		return repo, errors.Wrap(err, "create repository error")
+		return repo, err
 	}
 	tx.Commit()
 	return repo, nil

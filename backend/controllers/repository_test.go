@@ -9,6 +9,7 @@ import (
 	"testing"
 
 	"github.com/gin-gonic/gin"
+	"github.com/go-sql-driver/mysql"
 	utils "github.com/sriharivishnu/shopify-challenge/mocks/helpers"
 	mocks "github.com/sriharivishnu/shopify-challenge/mocks/services"
 	"github.com/sriharivishnu/shopify-challenge/models"
@@ -69,6 +70,9 @@ func TestRepositoryCreateError(t *testing.T) {
 		},
 		{
 			"RepoCreateError", "test123", "desc", "Test SQL error", errors.New("Test SQL error"), 500,
+		},
+		{
+			"RepoDuplicateCreate", "test123", "desc", "This Resource Already Exists!", &mysql.MySQLError{Number: 1062}, 409,
 		},
 	}
 	log.SetOutput(ioutil.Discard)
