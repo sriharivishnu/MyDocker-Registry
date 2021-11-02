@@ -48,7 +48,9 @@ Commands:
 ```
 
 NOTE:
-By default, the CLI points to the deployed API URL, but can be configured with `mydocker config --host <URL>` (when running locally, URL would be `http://localhost:5000/v1`)
+By default, the CLI points to the deployed API URL, but can be configured with `mydocker config --host <URL>` (when running locally, URL would be `http://localhost:5000`)
+
+#### EDIT: The deployed API has been taken down, so by default, the API URL now points to the local URL
 
 ## Sample Usage of mydocker
 After installation, run `mydocker signup` to sign up. A config file will be created in your home directory `~/.mydocker.json`. 
