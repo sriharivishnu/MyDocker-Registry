@@ -8,7 +8,7 @@ if not os.path.exists(CONFIG_FILE):
 
 
 class Defaults:
-    API_URL = "http://prod.eba-c2qbpgyt.us-east-1.elasticbeanstalk.com"
+    API_URL = "http://localhost:5000"
     LOCAL_API_URL = "http://localhost:5000"
     TOKEN = None
     VERSION = "v1"
